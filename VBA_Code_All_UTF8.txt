@@ -1,0 +1,2958 @@
+==========================================================================================
+FILE 01: VBA Code/FunaccountNo.bas
+ORIGINAL ENCODING DETECTED: cp1256
+==========================================================================================
+Attribute VB_Name = "FunaccountNo"
+Option Explicit
+
+Function GenAccNo(parentNo As String, AccLevel As Integer) As String
+    
+    Dim ws As Worksheet
+    Dim lastRow As Long, i As Long
+    Dim lastSeq As Long
+    Dim prefix As String
+    
+    On Error GoTo ErrHandler  ' تجاهل الأخطاء
+    
+    Set ws = ThisWorkbook.Worksheets("judje")
+    
+    Select Case AccLevel
+        
+        Case 1
+            GenAccNo = Format(parentNo, "0")
+        
+        Case 2
+            prefix = Format(parentNo, "0")
+            lastSeq = 0
+            lastRow = ws.Cells(Rows.Count, "B").End(xlUp).Row
+            For i = 3 To lastRow
+                If Len(ws.Cells(i, "B").Value) = 2 Then
+                    If Left(ws.Cells(i, "B").Value, 1) = prefix Then
+                        lastSeq = Application.Max(lastSeq, CLng(Right(ws.Cells(i, "B").Value, 1)))
+                    End If
+                End If
+            Next i
+            GenAccNo = prefix & Format(lastSeq + 1, "0")
+        
+        Case 3
+            prefix = Format(parentNo, "00")
+            lastSeq = 0
+            lastRow = ws.Cells(Rows.Count, "B").End(xlUp).Row
+            For i = 3 To lastRow
+                If Len(ws.Cells(i, "B").Value) = 3 Then
+                    If Left(ws.Cells(i, "B").Value, 2) = prefix Then
+                        lastSeq = Application.Max(lastSeq, CLng(Right(ws.Cells(i, "B").Value, 1)))
+                    End If
+                End If
+            Next i
+            GenAccNo = prefix & Format(lastSeq + 1, "0")
+        
+        Case 4
+            prefix = parentNo
+            lastSeq = 0
+            lastRow = ws.Cells(Rows.Count, "B").End(xlUp).Row
+            For i = 3 To lastRow
+                If Len(ws.Cells(i, "B").Value) = 5 Then
+                    If Left(ws.Cells(i, "B").Value, Len(prefix)) = prefix Then
+                        lastSeq = Application.Max(lastSeq, CLng(Right(ws.Cells(i, "B").Value, 2)))
+                    End If
+                End If
+            Next i
+            GenAccNo = prefix & Format(lastSeq + 1, "00")
+        
+        Case 5
+            prefix = parentNo
+            lastSeq = 0
+            lastRow = ws.Cells(Rows.Count, "B").End(xlUp).Row
+            For i = 3 To lastRow
+                If Len(ws.Cells(i, "B").Value) = 7 Then
+                    If Left(ws.Cells(i, "B").Value, Len(prefix)) = prefix Then
+                        lastSeq = Application.Max(lastSeq, CLng(Right(ws.Cells(i, "B").Value, 2)))
+                    End If
+                End If
+            Next i
+            GenAccNo = prefix & Format(lastSeq + 1, "00")
+        
+        Case 6
+            GenAccNo = parentNo & "1"
+        
+        Case Else
+            GenAccNo = ""
+    End Select
+    Exit Function
+
+ErrHandler:
+    GenAccNo = ""  ' لو صار خطأ يرجع فاضي
+End Function
+
+==========================================================================================
+FILE 02: VBA Code/Module1.bas
+ORIGINAL ENCODING DETECTED: utf-8-sig
+==========================================================================================
+Attribute VB_Name = "Module1"
+Option Explicit
+
+Sub OpenUsrformreport()
+RPACCOUNT.Show
+
+End Sub
+
+Sub printreport()
+   Sheets("report").PrintPreview
+   
+End Sub
+
+Sub addnewopration()
+  Opration.Show
+End Sub
+
+Sub addnewaccount()
+  addacount.Show
+End Sub
+Sub addCurrncy()
+  Cod.Show
+End Sub
+
+Sub ADDOPRAtionqbth()
+  Opraqabth.Show
+End Sub
+
+==========================================================================================
+FILE 03: VBA Code/Daily_Journal.cls
+ORIGINAL ENCODING DETECTED: utf-8-sig
+==========================================================================================
+VERSION 1.0 CLASS
+BEGIN
+  MultiUse = -1  'True
+END
+Attribute VB_Name = "Daily_Journal"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = False
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = True
+Option Explicit
+
+==========================================================================================
+FILE 04: VBA Code/Daily_Operation.cls
+ORIGINAL ENCODING DETECTED: utf-8-sig
+==========================================================================================
+VERSION 1.0 CLASS
+BEGIN
+  MultiUse = -1  'True
+END
+Attribute VB_Name = "Daily_Operation"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = False
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = True
+Option Explicit
+
+==========================================================================================
+FILE 05: VBA Code/data.cls
+ORIGINAL ENCODING DETECTED: utf-8-sig
+==========================================================================================
+VERSION 1.0 CLASS
+BEGIN
+  MultiUse = -1  'True
+END
+Attribute VB_Name = "data"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = False
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = True
+Option Explicit
+
+==========================================================================================
+FILE 06: VBA Code/Home.cls
+ORIGINAL ENCODING DETECTED: utf-8-sig
+==========================================================================================
+VERSION 1.0 CLASS
+BEGIN
+  MultiUse = -1  'True
+END
+Attribute VB_Name = "Home"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = False
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = True
+Option Explicit
+
+==========================================================================================
+FILE 07: VBA Code/report.cls
+ORIGINAL ENCODING DETECTED: cp1256
+==========================================================================================
+VERSION 1.0 CLASS
+BEGIN
+  MultiUse = -1  'True
+END
+Attribute VB_Name = "report"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = False
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = True
+Option Explicit
+
+Private Sub Worksheet_Change(ByVal Target As Range)
+    Dim KeyCells As Range
+    Set KeyCells = Me.Range("H2,F3,H3")
+    
+    If Intersect(Target, KeyCells) Is Nothing Then Exit Sub
+
+    Application.ScreenUpdating = False
+    Application.EnableEvents = False
+
+    Dim i As Long
+    Dim lastRow As Long
+
+    ' نجيب آخر صف فيه مدين أو دائن
+    lastRow = Application.Max( _
+        Me.Cells(Me.Rows.Count, "K").End(xlUp).Row, _
+        Me.Cells(Me.Rows.Count, "L").End(xlUp).Row)
+    
+    If lastRow < 8 Then lastRow = 8
+
+    ' نمسح عمود M كله من صف 8 لآخر الشيت
+    Me.Range("M8:M" & Me.Rows.Count).ClearContents
+
+    ' نتأكد إن M7 رقم
+    If Not IsNumeric(Me.Range("M7").Value) Then Me.Range("M7").Value = 0
+
+    ' نحط المعادلة بس للصفوف اللي فيها مدين أو دائن
+    Application.Calculation = xlCalculationManual
+    For i = 8 To lastRow
+        If IsNumeric(Me.Cells(i, "K").Value) Or IsNumeric(Me.Cells(i, "L").Value) Then
+            Me.Cells(i, "M").Formula = "=M" & i - 1 & "+K" & i & "-L" & i
+        End If
+    Next i
+    Application.Calculate
+    Application.Calculation = xlCalculationAutomatic
+
+    Me.Range("M8:M" & lastRow).NumberFormat = "#,##0.00 ""ر.س"""
+    Me.Rows("8:" & lastRow).AutoFit
+
+    Application.EnableEvents = True
+    Application.ScreenUpdating = True
+End Sub
+'Private Sub Worksheet_Calculate()
+'    Dim lastRow As Long
+'    Dim i As Long
+'
+'    Application.EnableEvents = False
+'     Me.Range("M8:M100000").ClearContents
+'    lastRow = Me.Cells(Me.Rows.Count, "K").End(xlUp).Row
+'    If lastRow < 8 Then lastRow = 8
+    
+'    For i = 8 To lastRow
+''      If Me.Cells(i, "K").Value <> "" Or Me.Cells(i, "L").Value <> "" Then
+ '      ' If i = 8 Then
+ '      '     Me.Cells(i, "M").Formula = "=K" & i & "-L" & i
+ '      '     Else
+ '           Me.Cells(i, "M").Formula = "=M" & i - 1 & "+K" & i & "-L" & i
+ '       End If
+ '          Me.Rows("8:" & lastRow).WrapText = True
+ '          Me.Rows("8:" & lastRow).EntireRow.AutoFit
+ ''
+       ' End If
+ '   Next i
+ '
+ '   Application.EnableEvents = True
+'End Sub
+
+==========================================================================================
+FILE 08: VBA Code/ThisWorkbook.cls
+ORIGINAL ENCODING DETECTED: utf-8-sig
+==========================================================================================
+VERSION 1.0 CLASS
+BEGIN
+  MultiUse = -1  'True
+END
+Attribute VB_Name = "ThisWorkbook"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = False
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = True
+Option Explicit
+
+==========================================================================================
+FILE 09: VBA Code/ورقة1.cls
+ORIGINAL ENCODING DETECTED: cp1256
+==========================================================================================
+VERSION 1.0 CLASS
+BEGIN
+  MultiUse = -1  'True
+END
+Attribute VB_Name = "ورقة1"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = False
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = True
+Option Explicit
+
+==========================================================================================
+FILE 10: VBA Code/ورقة2.cls
+ORIGINAL ENCODING DETECTED: cp1256
+==========================================================================================
+VERSION 1.0 CLASS
+BEGIN
+  MultiUse = -1  'True
+END
+Attribute VB_Name = "ورقة2"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = False
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = True
+Option Explicit
+
+==========================================================================================
+FILE 11: VBA Code/ورقة3.cls
+ORIGINAL ENCODING DETECTED: cp1256
+==========================================================================================
+VERSION 1.0 CLASS
+BEGIN
+  MultiUse = -1  'True
+END
+Attribute VB_Name = "ورقة3"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = False
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = True
+Option Explicit
+
+==========================================================================================
+FILE 12: VBA Code/ورقة4.cls
+ORIGINAL ENCODING DETECTED: cp1256
+==========================================================================================
+VERSION 1.0 CLASS
+BEGIN
+  MultiUse = -1  'True
+END
+Attribute VB_Name = "ورقة4"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = False
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = True
+Option Explicit
+
+==========================================================================================
+FILE 13: VBA Code/ورقة5.cls
+ORIGINAL ENCODING DETECTED: cp1256
+==========================================================================================
+VERSION 1.0 CLASS
+BEGIN
+  MultiUse = -1  'True
+END
+Attribute VB_Name = "ورقة5"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = False
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = True
+Option Explicit
+
+==========================================================================================
+FILE 14: VBA Code/ورقة6.cls
+ORIGINAL ENCODING DETECTED: cp1256
+==========================================================================================
+VERSION 1.0 CLASS
+BEGIN
+  MultiUse = -1  'True
+END
+Attribute VB_Name = "ورقة6"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = False
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = True
+Option Explicit
+
+==========================================================================================
+FILE 15: VBA Code/addacount.frm
+ORIGINAL ENCODING DETECTED: cp1256
+==========================================================================================
+VERSION 5.00
+Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} addacount 
+   ClientHeight    =   11364
+   ClientLeft      =   -336
+   ClientTop       =   -1308
+   ClientWidth     =   17124
+   OleObjectBlob   =   "addacount.frx":0000
+   StartUpPosition =   1  'CenterOwner
+End
+Attribute VB_Name = "addacount"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = False
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+
+ Private isUpdating As Boolean
+
+Private Sub AddNew_Click()
+ 
+    Dim wsJudje As Worksheet
+    Dim lastRow As Long, i As Long
+    Dim chAccValue As String
+    Dim targetLevel As Integer
+    
+    Set wsJudje = ThisWorkbook.Sheets("judje")
+    chAccValue = Trim(Me.Cobchacc.Value)
+    
+    If chAccValue = "" Then Exit Sub
+    
+    Application.EnableEvents = False
+    isUpdating = True
+    
+    ' مسح القيم القديمة بس
+    Me.cboparent.clear
+    Me.txtAccountName.Text = ""
+    Me.cboGroupCode.Value = ""
+    Me.cboAnalytical.Value = ""
+    Me.cboClasscode.Value = ""
+    Me.txtLevel.Value = ""
+    Me.cboType.Value = ""
+    
+    Select Case chAccValue
+        Case "عام"
+            Me.cboType.Value = "عام"
+            Me.txtLevel.Value = 2
+            targetLevel = 1
+            Me.cboparent.Enabled = True
+            Me.txtAccountName.Enabled = True
+            Me.cboGroupCode.Enabled = True
+            Me.Cobchacc.Enabled = False
+            Me.cboparent.SetFocus
+        Case "مساعد"
+            Me.cboType.Value = "مساعد"
+            Me.txtLevel.Value = 3
+            targetLevel = 2
+             Me.Cobchacc.Enabled = False
+            Me.cboparent.Enabled = True
+            Me.txtAccountName.Enabled = True
+            Me.cboGroupCode.Enabled = True
+            Me.cboparent.SetFocus
+            
+        Case "فرعي"
+            Me.cboType.Value = "فرعي"
+            Me.txtLevel.Value = 4
+            targetLevel = 3
+            Me.cboparent.Enabled = True
+            Me.txtAccountName.Enabled = True
+            Me.cboGroupCode.Enabled = True
+             Me.Cobchacc.Enabled = False
+             Me.cboparent.SetFocus
+        Case "تحليلي"
+            Me.cboType.Value = "تحليلي"
+            Me.txtLevel.Value = 5
+            targetLevel = 4
+            Me.cboparent.Enabled = True
+            Me.txtAccountName.Enabled = True
+            Me.cboGroupCode.Enabled = True
+            Me.cboAnalytical.Enabled = True
+            Me.cboClasscode.Enabled = True
+            Me.Cobchacc.Enabled = False
+            Me.cboparent.SetFocus
+    End Select
+    
+    ' تعبئة cboparent من judje عمود C حسب مستوى E
+    If targetLevel > 0 Then
+        lastRow = wsJudje.Cells(wsJudje.Rows.Count, "C").End(xlUp).Row
+        For i = 3 To lastRow
+            If val(wsJudje.Cells(i, "E").Value) = targetLevel Then
+                If Trim(wsJudje.Cells(i, "C").Value) <> "" Then
+                    Me.cboparent.AddItem wsJudje.Cells(i, "C").Value
+                End If
+            End If
+        Next i
+    End If
+    
+    Application.EnableEvents = True
+    isUpdating = False
+    Me.cboparent.SetFocus
+
+End Sub
+
+' دالة مساعدة Cboparentفي تعبئة
+Private Sub FillCboparentByLevel(ws As Worksheet, level As Integer)
+    Dim lastRow As Long, i As Long
+    
+    cboparent.clear
+    lastRow = ws.Cells(ws.Rows.Count, "E").End(xlUp).Row
+    
+    For i = 3 To lastRow
+        If val(ws.Cells(i, "E").Value) = level Then
+            cboparent.AddItem ws.Cells(i, "C").Value
+        End If
+    Next i
+
+End Sub
+ Private Sub cboparent_Change()
+'تعبئة تكست رقم الحساب الحساب الرئيسي و تكست رتبة الحساب
+ 
+
+    Dim wsJudje As Worksheet
+    Dim parentName As String
+   
+    Dim i As Long, lastRow As Long
+    
+    If isUpdating Then Exit Sub
+    If Trim(Me.cboparent.Value) = "" Then Exit Sub
+    
+    Set wsJudje = ThisWorkbook.Sheets("judje")
+    parentName = Trim(Me.cboparent.Value)
+   
+    Application.EnableEvents = False
+    isUpdating = True
+    
+    Me.TxtprenterNo.Value = ""
+    lastRow = wsJudje.Cells(wsJudje.Rows.Count, "C").End(xlUp).Row
+    
+    For i = 3 To lastRow
+        If Trim(wsJudje.Cells(i, "C").Value) = parentName Then
+            Me.TxtprenterNo.Value = wsJudje.Cells(i, "B").Value
+            Exit For
+        End If
+    Next i
+    
+    Application.EnableEvents = True
+    isUpdating = False
+
+        
+    '''''''''''''''''''''''ترقيم الحساب الجديد
+  
+    
+    
+   
+      
+End Sub
+
+Private Sub clear_MouseDown(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single)
+ Me.cboparent.Text = ""
+    Me.txtAccountNo.Text = ""
+    Me.txtAccountName.Text = ""
+    Me.cboClasscode.Text = ""
+    Me.cboType.Text = ""
+    Me.cboAnalytical.Text = ""
+    Me.txtLevel.Text = ""
+    Me.cboNature.Text = ""
+    Me.cboReportType.Text = ""
+    Me.chckStatus.Value = False
+    Me.cboGroupCode.Value = ""
+    Me.Cobchacc.SetFocus
+    Me.save.Visible = True
+    Me.edit.Visible = False
+    Me.del.Visible = False
+      Me.cboparent.Enabled = False
+            Me.txtAccountName.Enabled = False
+            Me.cboGroupCode.Enabled = False
+            Me.cboAnalytical.Enabled = False
+            Me.cboClasscode.Enabled = False
+            Me.Cobchacc.Enabled = True
+    
+End Sub
+Private Sub save_MouseDown(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single)
+
+    On Error GoTo ErrHandler
+    Application.ScreenUpdating = False
+    Application.EnableEvents = False
+   
+    Dim ws As Worksheet
+    Dim lastRow As Long, i As Long
+    Dim accName As String
+     Dim accType As String
+    Set ws = ThisWorkbook.Worksheets("judje")
+    accName = Trim(Me.txtAccountName.Text)
+    
+  
+accType = LCase(Trim(Me.cboType.Text))
+
+' 1. التحقق من اسم الحساب - دايماً
+If accName = "" Then
+    MsgBox "يجب ادخال اسم الحساب", vbExclamation
+    Me.txtAccountName.SetFocus: Exit Sub
+End If
+
+' 2. التحقق الأساسي لكل الأنواع
+If Trim(Me.cboparent.Text) = "" Then
+    MsgBox "يرجى اختيار الحساب الرئيسي", vbExclamation
+    Me.cboparent.SetFocus: Exit Sub
+End If
+If Trim(Me.txtAccountNo.Text) = "" Then
+    MsgBox "يجب ادخال رقم الحساب", vbExclamation
+    Me.txtAccountNo.SetFocus: Exit Sub
+End If
+If Trim(Me.TxtprenterNo.Text) = "" Then
+    MsgBox "يجب ادخال رقم الحساب الرئيسي", vbExclamation
+    Me.TxtprenterNo.SetFocus: Exit Sub
+End If
+If Trim(Me.cboType.Text) = "" Then
+    MsgBox "يجب تحديد نوع الحساب", vbExclamation
+    Me.cboType.SetFocus: Exit Sub
+End If
+If Trim(Me.cboNature.Text) = "" Then
+    MsgBox "يجب تحديد طبيعة الحساب", vbExclamation
+    Me.cboNature.SetFocus: Exit Sub
+End If
+If Trim(Me.cboReportType.Text) = "" Then
+    MsgBox "يجب اختيار نوع التقرير", vbExclamation
+    Me.cboReportType.SetFocus: Exit Sub
+End If
+
+' 3. شرط إضافي بس لو النوع تحلي
+If accType = "تحليلي" Then
+    If Trim(Me.cboAnalytical.Text) = "" Then
+        MsgBox "يجب اختيار البند التحليلي", vbExclamation
+        Me.cboAnalytical.SetFocus: Exit Sub
+    End If
+End If
+    Me.ListBox1.RowSource = ""
+    ' 2. التحقق من تكرار اسم الحساب في عمود C
+    lastRow = ws.Cells(ws.Rows.Count, "C").End(xlUp).Row
+    For i = 2 To lastRow
+        If LCase(Trim(ws.Cells(i, "C").Value)) = LCase(accName) Then
+            MsgBox "هذا الحساب موجود مسبقسا", vbExclamation
+            Me.txtAccountName.SetFocus
+            GoTo CleanExit
+            Exit Sub
+        End If
+    Next i
+    
+    ' 3. اضافة البيانات في اخر سطر فاضي
+    lastRow = lastRow + 1
+    
+    ws.Cells(lastRow, "D").Value = Me.TxtprenterNo.Text        ' العمود D
+    ws.Cells(lastRow, "B").Value = Me.txtAccountNo.Text       ' العمود B
+    ws.Cells(lastRow, "C").Value = accName                    ' العمود C
+    ws.Cells(lastRow, "L").Value = Me.cboClasscode.Text       ' العمود L
+    ws.Cells(lastRow, "F").Value = Me.cboType.Text            ' العمود F
+    ws.Cells(lastRow, "H").Value = Me.cboGroupCode.Text       ' العمود H
+    ws.Cells(lastRow, "J").Value = Me.cboAnalytical.Text      ' العمود J
+    ws.Cells(lastRow, "E").Value = Me.txtLevel.Text           ' العمود E
+    ws.Cells(lastRow, "I").Value = Me.cboNature.Text          ' العمود I
+    ws.Cells(lastRow, "G").Value = Me.cboReportType.Text      ' العمود G
+    
+    ' العمود K حسب حالة الشيك بوكس
+    If Me.chckStatus.Value = True Then
+        ws.Cells(lastRow, "K").Value = "موقف"
+    Else
+        ws.Cells(lastRow, "K").Value = "نشط"
+    End If
+    Me.ListBox1.RowSource = "TableJudje"
+    
+    MsgBox "تم اضافة الحساب بنجاح", vbInformation
+    
+    ' 4. مسح الحقول بعد الحفظ
+    Me.cboparent.Text = ""
+    Me.txtAccountNo.Text = ""
+    Me.txtAccountName.Text = ""
+    Me.cboClasscode.Text = ""
+    Me.cboType.Text = ""
+    Me.cboAnalytical.Text = ""
+    Me.txtLevel.Text = ""
+    Me.cboNature.Text = ""
+    Me.cboReportType.Text = ""
+    Me.chckStatus.Value = False
+    Me.cboGroupCode.Value = ""
+     Me.cboparent.Enabled = False
+     Me.cboClasscode.Enabled = False
+     Me.cboAnalytical.Enabled = False
+     Me.cboGroupCode.Enabled = False
+     Me.txtAccountName.Enabled = False
+     Me.Cobchacc.Enabled = True
+     Me.Cobchacc.SetFocus
+CleanExit:
+    Application.ScreenUpdating = True
+    Application.EnableEvents = True
+    Exit Sub
+    
+ErrHandler:
+    MsgBox "حدث خطأ" & Err.Description & vbCrLf & "رقم الخطأ" & Err.number, vbCritical
+    Resume CleanExit
+    
+End Sub
+
+
+
+Private Sub txtprenterNo_Change()
+ 
+
+     Dim wsJudje As Worksheet
+    Dim lastRow As Long, i As Long
+    Dim cnt As Long
+    Dim mainAcc As String
+    Dim accType As String
+    
+    If Trim(Me.TxtprenterNo.Value) = "" Then Exit Sub
+    
+    Set wsJudje = ThisWorkbook.Sheets("judje")
+    mainAcc = Trim(Me.TxtprenterNo.Value)
+    accType = LCase(Trim(Me.cboType.Value))
+    
+    
+    ' جيب طبيعة الحساب ونوع التقرير من الحساب الرئيسي في عمود B
+lastRow = wsJudje.Cells(wsJudje.Rows.Count, "B").End(xlUp).Row
+For i = 3 To lastRow
+    If Trim(wsJudje.Cells(i, "B").Value) = mainAcc Then
+        Me.cboNature.Value = Trim(wsJudje.Cells(i, "I").Value)
+        Me.cboReportType.Value = Trim(wsJudje.Cells(i, "G").Value)
+        Exit For
+    End If
+Next i
+
+    If accType <> "عام" And accType <> "مساعد" And accType <> "فرعي" And accType <> "تحليلي" Then Exit Sub
+    
+    cnt = 0
+    lastRow = wsJudje.Cells(wsJudje.Rows.Count, "D").End(xlUp).Row
+    
+    '
+    For i = 3 To lastRow
+        If Trim(wsJudje.Cells(i, "D").Value) = mainAcc _
+           And LCase(Trim(wsJudje.Cells(i, "F").Value)) = accType Then
+            cnt = cnt + 1
+        End If
+    Next i
+    
+    
+    If accType = "عام" Then
+        If cnt + 1 > 9 Then
+            MsgBox "لايمكن اضافة حساب اخر هذه المجموعة مكتملة 9 حسابات", vbExclamation
+            Me.txtAccountNo.Value = ""
+            Exit Sub
+        End If
+        Me.txtAccountNo.Value = mainAcc & CStr(cnt + 1)
+    
+   
+    Else
+        If cnt + 1 > 99 Then
+            MsgBox "ايمكن اضافة حساب اخر هذه المجموعة مكتملة 99 حسابات " & Me.cboType.Value, vbExclamation
+            Me.txtAccountNo.Value = ""
+            Exit Sub
+        End If
+        Me.txtAccountNo.Value = mainAcc & Format(cnt + 1, "00")
+    End If
+
+
+End Sub
+
+
+
+Private Sub UserForm_Initialize()
+
+    Dim ws As Worksheet
+    Dim lastRow As Long, i As Long
+    
+    Set ws = ThisWorkbook.Sheets("data")
+    
+    Application.EnableEvents = False
+    isUpdating = True
+    
+    Me.Cobchacc.clear
+    
+    lastRow = ws.Cells(ws.Rows.Count, "AL").End(xlUp).Row
+    
+    For i = 4 To lastRow
+        If Trim(ws.Cells(i, "AL").Value) <> "" Then
+            Me.Cobchacc.AddItem ws.Cells(i, "AL").Value
+        End If
+    Next i
+    
+    Application.EnableEvents = True
+    isUpdating = False
+
+End Sub
+
+==========================================================================================
+FILE 16: VBA Code/Cod.frm
+ORIGINAL ENCODING DETECTED: cp1256
+==========================================================================================
+VERSION 5.00
+Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} Cod 
+   Caption         =   "إضافة عملـــــة"
+   ClientHeight    =   9540.001
+   ClientLeft      =   -276
+   ClientTop       =   -1068
+   ClientWidth     =   13716
+   OleObjectBlob   =   "Cod.frx":0000
+   StartUpPosition =   1  'CenterOwner
+End
+Attribute VB_Name = "Cod"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = False
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+
+
+Private Sub cboCurrType_Change()
+    If cboCurrType.Value = "عملة محلية" Then
+     
+        MinRate.Value = 1
+        MaxRate.Value = 1
+        txt_CrrRate.Value = 1
+        
+        MinRate.Locked = True
+        MaxRate.Locked = True
+        txt_CrrRate.Locked = True
+        
+        
+        MinRate.BackColor = RGB(240, 240, 240)
+        MaxRate.BackColor = RGB(240, 240, 240)
+        txt_CrrRate.BackColor = RGB(240, 240, 240)
+        
+    ElseIf cboCurrType.Value = "عملة اجنبية" Then
+     
+        MinRate.Locked = False
+        MaxRate.Locked = False
+        txt_CrrRate.Locked = False
+        
+        
+        MinRate.BackColor = RGB(255, 255, 255)
+        MaxRate.BackColor = RGB(255, 255, 255)
+        txt_CrrRate.BackColor = RGB(255, 255, 255)
+        
+    
+       ' MinRate.Value = ""
+       ' MaxRate.Value = ""
+       ' txt_CrrRate.Value = ""
+    End If
+
+End Sub
+
+Private Sub clear_BeforeDragOver(ByVal Cancel As MSForms.ReturnBoolean, ByVal Data As MSForms.DataObject, ByVal X As Single, ByVal Y As Single, ByVal DragState As MSForms.fmDragState, ByVal Effect As MSForms.ReturnEffect, ByVal Shift As Integer)
+
+End Sub
+
+Private Sub clear_MouseDown(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single)
+  Me.txtCurrID.Value = ""
+        Me.txtCurrName.Value = ""
+        Me.txtCurrCode.Value = ""
+        Me.txt_CrrRate.Value = ""
+        Me.txt_CrrRate.Value = ""
+        Me.MinRate.Value = ""
+        Me.MaxRate.Value = ""
+        Me.txtCurrName.Enabled = True
+        Me.txtCurrCode.Enabled = True
+        Me.save.Visible = True
+        Me.edit.Visible = False
+       
+    Dim ws As Worksheet
+    Dim MaxID As Long
+    Dim i As Long
+    
+    Set ws = ThisWorkbook.Worksheets("data")
+    
+    lastRow = ws.Cells(ws.Rows.Count, "B").End(xlUp).Row
+    
+    MaxID = 0
+   
+    For i = 3 To lastRow
+        If IsNumeric(ws.Cells(i, "B").Value) Then
+            If ws.Cells(i, "B").Value > MaxID Then
+                MaxID = ws.Cells(i, "B").Value
+            End If
+        End If
+    Next i
+    
+    txtCurrID.Value = MaxID + 1
+    
+    Me.txtCurrName.SetFocus
+        
+End Sub
+Private Sub edit_MouseDown(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single)
+On Error Resume Next
+Dim rown As Integer
+rown = Me.ListBox1.List(TRANS, 0) + 1
+Me.ListBox1.ListIndex = -1
+Me.ListBox1.RowSource = ""
+ With ThisWorkbook.Sheets("data")
+
+    .Range("A" & rown).Value = "=row()-2"
+    .Range("C" & rown).Value = Me.txtCurrName.Value
+    .Range("D" & rown).Value = Me.txtCurrCode.Value
+    .Range("B" & rown).Value = Me.txtCurrID.Text
+    .Range("E" & rown).Value = Me.txt_CrrRate.Value
+    .Range("g" & rown).Value = Me.MaxRate.Text
+    .Range("f" & rown).Value = Me.MinRate.Text
+    .Range("H" & rown).Value = Me.cboCurrType.Text
+    
+    End With
+    MsgBox "تم تعديل العملية بنجاح"
+    
+     Me.txtCurrID.Value = ""
+        Me.txtCurrName.Value = ""
+        Me.txtCurrCode.Value = ""
+        Me.txt_CrrRate.Value = ""
+        Me.txt_CrrRate.Value = ""
+        Me.MinRate.Value = ""
+        Me.MaxRate.Value = ""
+     Me.txtCurrName.Enabled = True
+     Me.txtCurrCode.Enabled = True
+     Me.ListBox1.RowSource = "tablecurrncy"
+     
+    Me.txtCurrName.SetFocus
+    Dim MaxID As Long
+    Dim i As Long
+    
+    Set ws = ThisWorkbook.Worksheets("data")
+    
+    lastRow = ws.Cells(ws.Rows.Count, "B").End(xlUp).Row
+    
+    MaxID = 0
+   
+    For i = 3 To lastRow
+        If IsNumeric(ws.Cells(i, "B").Value) Then
+            If ws.Cells(i, "B").Value > MaxID Then
+                MaxID = ws.Cells(i, "B").Value
+            End If
+        End If
+    Next i
+    
+    txtCurrID.Value = MaxID + 1
+
+End Sub
+
+Private Sub ListBox1_DblClick(ByVal Cancel As MSForms.ReturnBoolean)
+Me.save.Visible = False
+
+Me.txtCurrName.Enabled = False
+Me.txtCurrCode.Enabled = False
+Me.TRANS.Value = Me.ListBox1.List(Me.ListBox1.ListIndex, 0)
+Me.txtCurrID.Value = Me.ListBox1.List(Me.ListBox1.ListIndex, 1)
+Me.txtCurrName.Value = Me.ListBox1.List(Me.ListBox1.ListIndex, 2)
+Me.txtCurrCode.Value = Me.ListBox1.List(Me.ListBox1.ListIndex, 3)
+Me.txt_CrrRate.Text = Me.ListBox1.List(Me.ListBox1.ListIndex, 4)
+Me.MinRate.Text = Me.ListBox1.List(Me.ListBox1.ListIndex, 5)
+Me.MaxRate.Value = Me.ListBox1.List(Me.ListBox1.ListIndex, 6)
+Me.cboCurrType.Value = Me.ListBox1.List(Me.ListBox1.ListIndex, 7)
+Me.del.Visible = True
+Me.edit.Visible = True
+End Sub
+
+Private Sub MinRate_AfterUpdate()
+
+   
+    Dim MinR As Double
+    Dim MaxR As Double
+    Dim Rate As Double
+    
+   
+    If cboCurrType.Value = "عملة محلية" Then Exit Sub
+    
+    If Trim(MinRate.Value) = "" Then Exit Sub
+    If Not IsNumeric(MinRate.Value) Then
+        MsgBox "الحد الادنى يجب ان يكون رقم", vbExclamation
+        MinRate.Value = ""
+        MinRate.SetFocus
+        Exit Sub
+    End If
+    
+    MinR = val(MinRate.Value)
+    
+  
+    If MinR <= 1 Then
+        MsgBox "الحد الادنى يجب ان يكون اكبر من 1", vbExclamation
+        MinRate.Value = ""
+        MinRate.SetFocus
+        Exit Sub
+    End If
+    
+    
+    If Trim(txt_CrrRate.Value) <> "" Then
+        Rate = val(txt_CrrRate.Value)
+        If MinR > Rate Then
+            MsgBox "الحد الادنى لايمكن ان يكون اكبر من سعر الصرف", vbExclamation
+            MinRate.Value = ""
+            MinRate.SetFocus
+            Exit Sub
+        End If
+    End If
+    
+    
+    If Trim(MaxRate.Value) <> "" Then
+        MaxR = val(MaxRate.Value)
+        If MinR >= MaxR Then
+            MsgBox "الحد الادنى يجب ان يكون اقل من الحد الاعلى", vbExclamation
+            MinRate.Value = ""
+            MinRate.SetFocus
+            Exit Sub
+        End If
+    End If
+End Sub
+
+Private Sub MaxRate_AfterUpdate()
+    Dim MinR As Double
+    Dim MaxR As Double
+    Dim Rate As Double
+    
+    If cboCurrType.Value = "عملة محلية" Then Exit Sub
+    
+    If Trim(MaxRate.Value) = "" Then Exit Sub
+    If Not IsNumeric(MaxRate.Value) Then
+        MsgBox "الحد الاعلى يجب ان يكون رقم", vbExclamation
+        MaxRate.Value = ""
+        MaxRate.SetFocus
+        Exit Sub
+    End If
+    
+    MaxR = val(MaxRate.Value)
+    
+    
+    If Trim(MinRate.Value) <> "" Then
+        MinR = val(MinRate.Value)
+        If MaxR <= MinR Then
+            MsgBox "الحد الاعلى يجب ان يكون اكبر من الحد الادنى", vbExclamation
+            MaxRate.Value = ""
+            MaxRate.SetFocus
+            Exit Sub
+        End If
+    End If
+    
+    
+    If Trim(txt_CrrRate.Value) <> "" Then
+        Rate = val(txt_CrrRate.Value)
+        If MaxR < Rate Then
+            MsgBox "الحد الاعلى يجب ان يكون اكبر او يساوي سعر الصرف", vbExclamation
+            MaxRate.Value = ""
+            MaxRate.SetFocus
+            Exit Sub
+        End If
+    End If
+End Sub
+Private Sub save_DblClick(ByVal Cancel As MSForms.ReturnBoolean)
+   Dim ws As Worksheet
+   Dim lastRow As Long
+   Dim r As Range
+   Dim curName As String
+   
+   Set ws = ThisWorkbook.Worksheets("data")
+   curName = Trim(txtCurrName.Value)
+   
+   If Trim(txtCurrID.Value) = "" Or Trim(txtCurrCode.Value) = "" Or curName = "" Or Trim(cboCurrType.Value) = "" Then
+        MsgBox prompt:="الرجاء التأكد من إدخال جميع بيانات الإذن", Title:="خطأعدم اكتمال البيانات"
+    Exit Sub
+    End If
+    
+    Set r = ws.Range("c:c").Find(what:=curName, lookat:=xlWhole, MatchCase:=False)
+       If Not r Is Nothing Then
+       MsgBox "العملة مدخلة سابقا", vbExclamation, "تنبيه"
+    Exit Sub
+    End If
+    
+ If cboCurrType.Value = "" Then
+        If Trim(txt_CrrRate.Value) = "" Or Not IsNumeric(txt_CrrRate.Value) Then
+        MsgBox "يرجى ادخال سعر الصرف كرقم", vbExclamation, "تنبيه"
+        txt_CrrRate.SetFocus
+    Exit Sub
+    End If
+    
+    If Trim(MinRate.Value) = "" Or Not IsNumeric(MinRate.Value) Then
+            MsgBox "يرجى ادخال الحد الادنى كرقم", vbExclamation, "تنبيه"
+            MinRate.SetFocus
+    Exit Sub
+    End If
+    
+    If Trim(MaxRate.Value) = "" Or Not IsNumeric(MaxRate.Value) Then
+            MsgBox "يرجى ادخال الحد الاعى كرقم", vbExclamation, "تنبيه"
+            MaxRate.SetFocus
+        Exit Sub
+        End If
+End If
+Me.ListBox1.RowSource = ""
+''''''''''''اضافة''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+Sheets("data").Activate
+ With ThisWorkbook.Sheets("data")
+    .Range("A3:h3").Select
+    Selection.ListObject.ListRows.Add (1)
+  
+    .Range("B3").Value = Me.txtCurrID.Value
+    .Range("C3").Value = Me.txtCurrName.Value
+    .Range("d3").Value = Me.txtCurrCode.Value
+    .Range("e3").Value = Me.txt_CrrRate.Value
+    .Range("f3").Value = Me.MinRate.Value
+    .Range("g3").Value = Me.MaxRate.Value
+    .Range("h3").Value = Me.cboCurrType.Value
+         End With
+         
+          MsgBox ("تم اضافة العملة بنجاح")
+          
+        Me.txtCurrID.Value = ""
+        Me.txtCurrName.Value = ""
+        Me.txtCurrCode.Value = ""
+        Me.txt_CrrRate.Value = ""
+        Me.txt_CrrRate.Value = ""
+        Me.MinRate.Value = ""
+        Me.MaxRate.Value = ""
+        
+        Me.ListBox1.RowSource = "tablecurrncy"
+          
+  
+    Dim MaxID As Long
+    Dim i As Long
+    
+    Set ws = ThisWorkbook.Worksheets("data")
+    
+    lastRow = ws.Cells(ws.Rows.Count, "B").End(xlUp).Row
+    
+    MaxID = 0
+   
+    For i = 3 To lastRow
+        If IsNumeric(ws.Cells(i, "B").Value) Then
+            If ws.Cells(i, "B").Value > MaxID Then
+                MaxID = ws.Cells(i, "B").Value
+            End If
+        End If
+    Next i
+    
+    txtCurrID.Value = MaxID + 1
+
+End Sub
+
+Private Sub txt_CrrRate_AfterUpdate()
+
+    Dim MinR As Double
+    Dim MaxR As Double
+    Dim Rate As Double
+    
+
+    If cboCurrType.Value = "عملة محلية" Then Exit Sub
+    
+  
+    If Trim(txt_CrrRate.Value) = "" Then Exit Sub
+    
+  
+    If Not IsNumeric(txt_CrrRate.Value) Then
+        MsgBox "سعر الصرف يجب ان يكون رقم", vbExclamation
+        txt_CrrRate.Value = ""
+        txt_CrrRate.SetFocus
+        Exit Sub
+    End If
+    
+    Rate = val(txt_CrrRate.Value)
+    
+  
+    If Trim(MinRate.Value) = "" Or Trim(MaxRate.Value) = "" Then
+        MsgBox "يرجى تحديد الحد الادنى والحد الاعلى اولا", vbExclamation
+        txt_CrrRate.Value = ""
+        MinRate.SetFocus
+        Exit Sub
+    End If
+    
+    MinR = val(MinRate.Value)
+    MaxR = val(MaxRate.Value)
+    
+    
+    If Rate > MaxR Then
+        MsgBox "سعر الصرف الذي ادخلته اكبر من الحد الاعلى", vbExclamation
+        txt_CrrRate.Value = ""
+        txt_CrrRate.SetFocus
+        Exit Sub
+    End If
+    
+
+    If Rate < MinR Then
+        MsgBox "سعر الصرف الذي ادخلته اقل من الحد الادنى", vbExclamation
+        txt_CrrRate.Value = ""
+        txt_CrrRate.SetFocus
+        Exit Sub
+    End If
+End Sub
+
+
+
+Private Sub UserForm_Initialize()
+
+    Dim ws As Worksheet
+    Dim lastRow As Long
+    Dim MaxID As Long
+    Dim i As Long
+      Dim HasLocal As Boolean
+   ' Set ws = ThisWorkbook.Worksheets("data")
+    
+   ' LastRow = ws.Cells(ws.Rows.Count, "B").End(xlUp).Row
+    
+   ' MaxID = 0
+   
+   ' For i = 3 To LastRow
+   '     If IsNumeric(ws.Cells(i, "B").Value) Then
+   '         If ws.Cells(i, "B").Value > MaxID Then
+   '             MaxID = ws.Cells(i, "B").Value
+   '         End If
+   '     End If
+   ' Next i
+    
+   ' txtCurrID.Value = MaxID + 1
+
+
+''
+  
+    
+    Set ws = ThisWorkbook.Worksheets("data")
+    
+    
+    cboCurrType.clear
+    cboCurrType.AddItem "عملة محلية"
+    cboCurrType.AddItem "عملة اجنبية"
+    
+   
+    lastRow = ws.Cells(ws.Rows.Count, "H").End(xlUp).Row
+    HasLocal = False
+    
+    For i = 3 To lastRow
+        If Trim(ws.Cells(i, "H").Value) = "عملة محلية" Then
+            HasLocal = True
+            Exit For
+        End If
+    Next i
+    
+   
+    If HasLocal Then
+        cboCurrType.Value = "عملة اجنبية"
+        cboCurrType.Enabled = False
+    Else
+        cboCurrType.Enabled = True
+    End If
+    
+    
+    MaxID = 0
+    For i = 2 To ws.Cells(ws.Rows.Count, "B").End(xlUp).Row
+        If IsNumeric(ws.Cells(i, "B").Value) Then
+            If ws.Cells(i, "B").Value > MaxID Then MaxID = ws.Cells(i, "B").Value
+        End If
+    Next i
+    txtCurrID.Value = MaxID + 1
+
+End Sub
+
+==========================================================================================
+FILE 17: VBA Code/Opraqabth.frm
+ORIGINAL ENCODING DETECTED: cp1256
+==========================================================================================
+VERSION 5.00
+Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} Opraqabth 
+   ClientHeight    =   10644
+   ClientLeft      =   -336
+   ClientTop       =   -1308
+   ClientWidth     =   17136
+   OleObjectBlob   =   "Opraqabth.frx":0000
+   StartUpPosition =   1  'CenterOwner
+End
+Attribute VB_Name = "Opraqabth"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = False
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+
+
+
+
+
+Private Sub cbokop_AfterUpdate()
+    
+    Dim selectedVal As String
+    selectedVal = Trim(Me.CboKOP.Value)
+    
+    If selectedVal = "" Then Exit Sub
+    
+    If Not IsInList(Me.CboKOP, selectedVal) Then
+        MsgBox "النوع الذي أدخلته غير موجود", vbExclamation, "تنبيه"
+        Me.CboKOP.Value = ""
+        Me.CboKOP.SetFocus
+    End If
+
+End Sub
+
+Private Sub Cbokop_Change()
+
+    On Error Resume Next
+    Me.CboKOP.DropDown
+    Dim ws As Worksheet
+    Dim lastRow As Long, i As Long
+    Dim accType As String
+    Dim jFilter As String
+    
+    Set ws = ThisWorkbook.Sheets("judje")
+    Me.Co_cashac.clear
+    
+    If Me.CboKOP.ListIndex = -1 Then Exit Sub
+    
+    accType = Trim(Me.CboKOP.Value)
+    
+    ' تحديد قيمة العمود J حسب اختيار cbokop
+    Select Case UCase(accType)
+        Case "سند قبض نقدي"
+            jFilter = "صندوق"
+        Case "سند قبض بنكي"
+            jFilter = "بنك"
+        Case "قبض عهدة"
+            jFilter = "عهد"
+        Case Else
+            Exit Sub
+    End Select
+    
+    lastRow = ws.Cells(ws.Rows.Count, "C").End(xlUp).Row
+    
+    With Me.Co_cashac
+        For i = 3 To lastRow
+            ' شرط 1: عمود J = القيمة المحددة من cbokop
+            ' شرط 2: عمود F = "تحليلي"
+            If UCase(Trim(ws.Cells(i, "J").Value)) = UCase(jFilter) _
+               And UCase(Trim(ws.Cells(i, "F").Value)) = "تحليلي" Then
+                
+                If Trim(ws.Cells(i, "C").Value) <> "" Then
+                    .AddItem ws.Cells(i, "C").Value
+                End If
+            End If
+        Next i
+    End With
+    
+    ' اختياري: اختيار أول عنصر تلقائياً
+   ' If Me.Co_cashac.listCount > 0 Then
+   '     Me.Co_cashac.ListIndex = 0
+   ' End If
+
+
+    
+   
+  
+    Dim maxNum As Long
+    Dim num As Long
+    Dim prefix As String
+    
+    On Error GoTo ErrHandler
+    
+    
+    If Trim(Me.CboKOP.Text) = "" Then
+        Me.Tex_NU.Value = ""
+        Exit Sub
+    End If
+    
+    Set ws = ThisWorkbook.Worksheets("Daily Operation")
+    maxNum = 0
+    
+    
+    Select Case Trim(Me.CboKOP.Text)
+        Case "سند قبض نقدي", "قبض عهدة", "سند قبض بنكي"
+            prefix = "RC"
+       
+    End Select
+    
+    
+    lastRow = ws.Cells(ws.Rows.Count, "B").End(xlUp).Row
+    If lastRow < 3 Then lastRow = 3
+    
+    
+    For i = 3 To lastRow
+        If UCase(Left(Trim(ws.Cells(i, "B").Value), Len(prefix))) = prefix Then
+            num = val(Mid(Trim(ws.Cells(i, "B").Value), Len(prefix) + 1))
+            If num > maxNum Then maxNum = num
+        End If
+    Next i
+    
+    
+    Me.Tex_NU.Value = prefix & Format(maxNum + 1, "000")
+    Exit Sub
+    
+ErrHandler:
+    MsgBox "خطأ في توليد رقم العملية: " & Err.Description, vbExclamation
+    Me.Tex_NU.Value = prefix & "001"
+
+End Sub
+
+Private Sub CboMostafed_Change()
+Me.CboMostafed.DropDown
+End Sub
+
+Private Sub cbosenter_Change()
+Me.cbosenter.DropDown
+
+End Sub
+
+'Private Sub co_cashac_BeforeUpdate(ByVal Cancel As MSForms.ReturnBoolean)
+Private Sub Co_cashac_AfterUpdate()
+    Dim selectedAcc As String
+    selectedAcc = Trim(Me.Co_cashac.Value)
+    
+    If selectedAcc = "" Then Exit Sub
+    
+    ' فحص لو اختار نفس الحساب اللي في المدين
+    If UCase(Trim(selectedAcc)) = UCase(Trim(Me.Co_dpacc.Value)) Then
+        MsgBox "لا يمكن القبض من نفس الحساب", vbExclamation, "تنبيه"
+        Me.Co_cashac.Value = ""
+        Me.Co_cashac.SetFocus
+        Exit Sub
+    End If
+    
+    ' باقي كود فحص وجود الحساب
+    If Not IsInList(Me.Co_cashac, selectedAcc) Then
+        MsgBox "الحساب المدخل غير موجود", vbExclamation, "تنبيه"
+        Me.Co_cashac.Value = ""
+        Me.Co_cashac.SetFocus
+    End If
+   '
+End Sub
+
+Private Sub Co_cashac_Change()
+Me.Co_cashac.DropDown
+
+End Sub
+Private Sub co_cur_Change()
+Dim ws As Worksheet
+    Dim rng As Range
+    Dim MINP As Double
+    Dim MAXP As Double
+    
+    Set ws = ThisWorkbook.Worksheets("data")
+    Set rng = ws.Range("c:c").Find(Co_cur.Value)
+    
+    If Not rng Is Nothing Then
+      MINP = ws.Cells(rng.Row, "f").Value
+       MAXP = ws.Cells(rng.Row, "g").Value
+       
+       Tex_rate.Value = ""
+        Tex_rate.Tag = MINP & "I" & MAXP
+       Else
+        Tex_rate.Value = ""
+        Tex_rate.Tag = ""
+       End If
+       
+       
+      ' تحديد سعر الصرف
+   
+    Dim curName As String
+    Dim foundRow As Long
+    
+    If Me.Co_cur.ListIndex = -1 Then Exit Sub
+    
+    Set ws = ThisWorkbook.Worksheets("data")
+    curName = Trim(Me.Co_cur.Text)
+    
+    ' دور على العملة في عمود A
+    foundRow = 0
+    On Error Resume Next
+    foundRow = Application.Match(curName, ws.Range("c3:c" & ws.Cells(ws.Rows.Count, "c").End(xlUp).Row), 0)
+    On Error GoTo 0
+    
+    If foundRow > 0 Then
+        foundRow = foundRow + 2
+        
+        
+        If LCase(Trim(ws.Cells(foundRow, "H").Value)) = "عملة محلية" Then
+            Me.Tex_rate.Text = "1"
+            Me.Tex_rate.Enabled = False
+            Me.Tex_Amount.SetFocus
+        Else
+            
+            Me.Tex_rate.Text = ws.Cells(foundRow, "E").Value
+            Me.Tex_rate.Enabled = True
+            Me.Tex_rate.SetFocus
+        End If
+    Else
+        Me.Tex_rate.Text = ""
+        Me.Tex_rate.Enabled = True
+    End If
+
+End Sub
+Private Sub cobkindmrga_AfterUpdate()
+Dim selectedVal As String
+    selectedVal = Trim(Me.cobkindmrga.Value)
+    
+    If selectedVal = "" Then Exit Sub
+    
+    If Not IsInList(Me.cobkindmrga, selectedVal) Then
+        MsgBox "النوع الذي أدخلته غير موجود", vbExclamation, "تنبيه"
+        Me.cobkindmrga.Value = ""
+        Me.cobkindmrga.SetFocus
+    End If
+End Sub
+
+Private Sub cobkindmrga_Change()
+
+    Dim ws As Worksheet
+    Dim lastRow As Long, i As Long
+    Dim dict As Object
+    Dim key As Variant
+    Dim filterVal As String
+    
+    Set ws = ThisWorkbook.Sheets("daily operation")
+    Set dict = CreateObject("Scripting.Dictionary")
+    
+    Me.cobnamemrga.clear
+    
+    Select Case Me.cobkindmrga.Value
+        Case "استلام نقدي"
+           ' Me.LablNameMrga.Visible = False
+           ' Me.cobnamemrga.Visible = False
+            Me.cobnamemrga.Value = "سند استلام"
+            Me.cobnamemrga.Enabled = False
+           ' Me.Tex_MrgaNo.SetFocus
+        Case "حواله"
+            Me.LablNameMrga.Visible = True
+            Me.LablNameMrga.Caption = "اســم البنك"
+            Me.cobnamemrga.Visible = True
+            Me.cobnamemrga.Enabled = True
+            filterVal = "حواله"
+            Call FillFilteredList(filterVal)
+            
+             
+            
+        Case Else
+            Me.LablNameMrga.Visible = False
+            Me.cobnamemrga.Visible = False
+    End Select
+End Sub
+
+Private Sub FillFilteredList(filterVal As String)
+    Dim ws As Worksheet
+    Dim lastRow As Long, i As Long
+    Dim dict As Object
+    Dim key As Variant
+    
+    Set ws = ThisWorkbook.Sheets("daily operation")
+    Set dict = CreateObject("Scripting.Dictionary")
+    
+    lastRow = ws.Cells(ws.Rows.Count, "O").End(xlUp).Row
+    
+    For i = 3 To lastRow
+        If UCase(Trim(ws.Cells(i, "O").Value)) = UCase(filterVal) Then
+            If Trim(ws.Cells(i, "P").Value) <> "" Then
+                If Not dict.Exists(Trim(ws.Cells(i, "P").Value)) Then
+                    dict.Add Trim(ws.Cells(i, "P").Value), ""
+                End If
+            End If
+        End If
+    Next i
+    
+    Me.cobnamemrga.clear
+    For Each key In dict.Keys
+        Me.cobnamemrga.AddItem CStr(key)
+    Next key
+        Me.cobnamemrga.Value = ""
+        Me.cobnamemrga.ListIndex = -1
+        
+End Sub
+
+
+
+Private Sub cobnamemrga_Change()
+If Me.Enabled = True Then
+If Len(Me.cobnamemrga.Text) > 0 Then
+Me.cobnamemrga.DropDown
+End If
+End If
+
+End Sub
+
+
+Private Sub save_MouseDown(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single)
+If Tex_da.Value = "" Or Tex_NU.Value = "" Or Co_cashac.Value = "" Or cboBian.Value = "" Or Tex_Amount.Value = "" Or Tex_rate.Value = "" Or cbosenter.Value = "" Or Co_cur.Value = "" Or Co_dpacc.Value = "" Then
+
+MsgBox prompt:="الرجاء التأكد من إدخال جميع بيانات الإذن", Title:="خطأعدم اكتمال البيانات"
+Else
+Application.ScreenUpdating = False
+Application.EnableEvents = False
+Application.Calculation = xlCalculationManual
+
+Me.ListBox1.RowSource = ""
+''''''''''''اضافة''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+Sheets("Daily Operation").Activate
+ With ThisWorkbook.Sheets("Daily Operation")
+    .Range("A3:Z3").Select
+    Selection.ListObject.ListRows.Add (1)
+
+    .Range("A3").Value = "=row()-2"
+    .Range("B3").Value = Me.Tex_NU.Value
+    .Range("C3").Value = Me.Tex_da
+    .Range("C3").NumberFormat = "yyyy-mm-dd"
+    .Range("I3").Value = Me.Co_cashac.Text
+    .Range("D3").Value = Me.CboKOP.Value
+    .Range("g3").Value = Me.cboBian.Value
+    .Range("F3").Value = Me.Co_dpacc.Value
+    .Range("J3").Value = Me.Co_cur.Value
+    .Range("K3").Value = Me.Tex_Amount.Text
+    .Range("L3").Value = Me.Tex_rate.Value
+    .Range("n3").Value = Me.CboMostafed.Value
+    .Range("O3").Value = Me.cobkindmrga.Value
+    .Range("P3").Value = Me.cobnamemrga.Text
+    .Range("Q3").Value = Me.Tex_MrgaNo.Text
+    .Range("R3").Value = Me.cbosenter.Text
+    .Range("U3").Value = Format(Now(), "yyyy-mm-dd hh:mm:ss")
+    
+        End With
+        
+       
+    Dim ws As Worksheet
+    Dim lastRow As Long
+    
+    Set ws = ThisWorkbook.Worksheets("Daily Journal")
+    
+   
+    lastRow = ws.Cells(ws.Rows.Count, "C").End(xlUp).Row
+    If lastRow < 3 Then lastRow = 2
+    
+   
+    ' ????? ?????: Tex_NU + co_dpacc
+    ws.Cells(lastRow + 1, "C").Value = Me.Tex_NU.Value
+    ws.Cells(lastRow + 1, "G").Value = Me.Co_cashac.Value
+    
+    ' ????? ??????: Tex_NU + co_cashac
+    ws.Cells(lastRow + 2, "C").Value = Me.Tex_NU.Value
+    ws.Cells(lastRow + 2, "G").Value = Me.Co_dpacc.Value
+    
+    
+          Application.Calculation = xlCalculationAutomatic
+          Application.EnableEvents = True
+          Application.ScreenUpdating = True
+   
+        
+     MsgBox ("تم اضافة الإذن بنجاح")
+   
+   Me.Co_cashac.Value = ""
+   Me.CboKOP.Value = ""
+   Me.cboBian.Value = ""
+   Me.Co_dpacc.Value = ""
+   Me.Co_cur.Value = ""
+   Me.Tex_Amount.Text = ""
+   Me.Tex_rate.Text = ""
+   Me.CboMostafed.Value = ""
+   Me.cobkindmrga.Value = ""
+   Me.cobnamemrga.Value = ""
+   Me.Tex_MrgaNo.Value = ""
+   Me.cbosenter.Value = ""
+  
+      End If
+      
+       Me.ListBox1.RowSource = "Tabledaily"
+
+    
+      
+End Sub
+
+Private Sub Tex_Amount_Change()
+  Call Calc_Amount
+End Sub
+
+Private Sub Tex_da_AfterUpdate()
+' تكست التاريخ
+ Dim dateValue As Date
+    Dim dateString As String
+    
+    dateString = Tex_da.Value
+   
+    If IsNumeric(dateString) Then
+        dateString = Format(dateString, "00000000")
+        dateString = Left(dateString, 4) & "-" & Mid(dateString, 5, 2) & "-" & Right(dateString, 2)
+    End If
+
+    On Error Resume Next
+    dateValue = CDate(dateString)
+    On Error GoTo 0
+    
+    If dateValue = 0 Then
+        MsgBox "تاريخ غير صحيح", vbExclamation, "خطأ"
+        Tex_da.Value = Format(Date, "yyyy-mm-dd")
+        Exit Sub
+    End If
+ 
+    If dateValue > Date Then
+        MsgBox "التاريخ اكبر من تاريخ اليوم", vbInformation, "تنبيه"
+    End If
+     
+    If Month(dateValue) < 1 Or Month(dateValue) > 12 Then
+        MsgBox "الشهر غير صحيح", vbExclamation, "خطأ"
+        Tex_da.Value = Format(Date, "yyyy-mm-dd")
+        Exit Sub
+    End If
+    
+    
+    If Day(dateValue) < 1 Or Day(dateValue) > Day(DateSerial(Year(dateValue), Month(dateValue) + 1, 0)) Then
+        MsgBox "اليوم غير صحيح", vbExclamation, "خطاء"
+        Tex_da.Value = Format(Date, "yyyy-mm-dd")
+        Exit Sub
+    End If
+    ' date
+    Tex_da.Value = Format(dateValue, "yyyy-mm-dd")
+      
+   
+    
+End Sub
+Private Sub Tex_rate_AfterUpdate()
+ 
+    Call Calc_Amount
+  Dim PRICE() As String
+    Dim MINP As Double
+    Dim MAXP As Double
+    
+ PRICE = Split(Tex_rate.Tag, "I")
+ 
+  If UBound(PRICE) = 1 Then
+  MINP = PRICE(0)
+  MAXP = PRICE(1)
+  
+  If Tex_rate.Value = "" Then
+     MsgBox "الرجاء ادخال سعر الصرف", vbExclamation, "خطأ"
+    ElseIf Not IsNumeric(Tex_rate.Value) Then
+    MsgBox "الرجاء ادخال قيمة رقمية", vbExclamation, "خطاء"
+    Tex_rate.Value = ""
+    ElseIf CDbl(Tex_rate.Value) < MINP Or CDbl(Tex_rate.Value) > MAXP Then
+    MsgBox "سعر الصرف يجب ان يكون بين" & MINP & "و" & MAXP, vbExclamation, "خطأ"
+    Tex_rate.Value = ""
+    Tex_rate.SetFocus
+    End If
+    End If
+    
+End Sub
+
+
+Private Sub UserForm_Initialize()
+
+ Tex_da.Value = Format(Date, "yyyy-mm-dd")
+ 
+  ' full cbokop
+    With Me.CboKOP
+    .clear
+    .AddItem "سند قبض نقدي"
+    .AddItem "سند قبض بنكي"
+     .AddItem "قبض عهدة"
+    End With
+    
+    With Me.cobkindmrga
+        .clear
+        .AddItem "استلام نقدي"
+        .AddItem "حواله"
+        
+        
+    End With
+   
+        
+    'cbmostafi
+   
+
+    Dim ws As Worksheet
+    Dim lastRow As Long, i As Long
+    Dim dict As Object
+    Dim key As Variant
+    
+    Set ws = ThisWorkbook.Sheets("daily operation")
+    Set dict = CreateObject("Scripting.Dictionary")
+    
+    Me.CboMostafed.clear
+    
+    lastRow = ws.Cells(ws.Rows.Count, "N").End(xlUp).Row
+    
+    '
+    For i = 3 To lastRow
+        If Trim(ws.Cells(i, "N").Value) <> "" Then
+            If Not dict.Exists(Trim(ws.Cells(i, "N").Value)) Then
+                dict.Add Trim(ws.Cells(i, "N").Value), ""
+            End If
+        End If
+    Next i
+    
+    
+    For Each key In dict.Keys
+        Me.CboMostafed.AddItem CStr(key)
+    Next key
+    '''''''''''''''''''
+    
+    
+
+'''''''''''''''''''''''''''''
+
+    Me.cboBian.Style = fmStyleDropDownCombo
+    Me.cboBian.MatchEntry = fmMatchEntryNone
+    Call FillCbobianFull
+    
+    
+    
+    
+   
+    Me.Co_dpacc.Style = fmStyleDropDownCombo
+    Me.Co_dpacc.MatchEntry = fmMatchEntryNone
+    Call FillCoDpAccFull
+End Sub
+
+Private Sub co_dpacc_KeyUp(ByVal KeyCode As MSForms.ReturnInteger, ByVal Shift As Integer)
+    Dim ws As Worksheet
+    Dim lastRow As Long, i As Long, j As Long
+    Dim searchTxt As String, itemTxt As String, typedTxt As String
+    Dim tempList() As String, words() As String
+    Dim found As Boolean, listCount As Long
+
+    On Error GoTo CleanExit
+    If KeyCode = vbKeyReturn Or KeyCode = vbKeyUp Or KeyCode = vbKeyDown Or KeyCode = vbKeyEscape Then Exit Sub
+
+    Set ws = ThisWorkbook.Worksheets("judje")
+    typedTxt = Me.Co_dpacc.Text
+    searchTxt = Trim(typedTxt)
+
+    Application.EnableEvents = False
+    Application.ScreenUpdating = False
+
+    If searchTxt = "" Then
+        Call FillCoDpAccFull
+        GoTo CleanExit
+    End If
+
+    lastRow = ws.Cells(ws.Rows.Count, "C").End(xlUp).Row
+    ReDim tempList(0 To 0)
+    listCount = 0
+
+    For i = 3 To lastRow
+        If ws.Cells(i, "F").Value = "تحليلي" Then
+            itemTxt = ws.Cells(i, "C").Value
+            words = Split(itemTxt, " ")
+            found = False
+            
+            For j = LBound(words) To UBound(words)
+                If InStr(1, UCase(words(j)), UCase(searchTxt), vbTextCompare) > 0 Then
+                    found = True
+                    Exit For
+                End If
+            Next j
+            
+            If found Then
+                tempList(listCount) = itemTxt
+                listCount = listCount + 1
+                ReDim Preserve tempList(0 To listCount)
+            End If
+        End If
+    Next i
+
+    If listCount > 0 Then
+        ReDim Preserve tempList(0 To listCount - 1)
+        Me.Co_dpacc.List = tempList
+        Me.Co_dpacc.DropDown
+    Else
+        Me.Co_dpacc.clear
+    End If
+
+    Me.Co_dpacc.Text = typedTxt
+    Me.Co_dpacc.SelStart = Len(typedTxt)
+
+CleanExit:
+    Application.EnableEvents = True
+    Application.ScreenUpdating = True
+    On Error GoTo 0
+End Sub
+
+Private Sub FillCoDpAccFull()
+    Dim ws As Worksheet
+    Dim lastRow As Long, i As Long
+    Dim tempList() As String
+    Dim listCount As Long
+
+    Set ws = ThisWorkbook.Worksheets("judje")
+    lastRow = ws.Cells(ws.Rows.Count, "C").End(xlUp).Row
+    ReDim tempList(0 To 0)
+    listCount = 0
+
+    For i = 3 To lastRow
+        If ws.Cells(i, "F").Value = "تحليلي" Then
+            tempList(listCount) = ws.Cells(i, "C").Value
+            listCount = listCount + 1
+            ReDim Preserve tempList(0 To listCount)
+        End If
+    Next i
+
+    If listCount > 0 Then
+        ReDim Preserve tempList(0 To listCount - 1)
+        Me.Co_dpacc.List = tempList
+    End If
+End Sub
+
+Private Sub co_dpacc_AfterUpdate()
+    Dim selectedAcc As String
+    selectedAcc = Trim(Me.Co_dpacc.Value)
+    
+    If selectedAcc = "" Then Exit Sub
+    
+    ' لا يمكن الصرف من نفس الحساب
+    If selectedAcc = Trim(Me.Co_cashac.Value) Then
+        MsgBox "لا يمكن الصرف من نفس الحساب", vbExclamation
+        Me.Co_dpacc.Value = ""
+        Me.Co_dpacc.SetFocus
+        Exit Sub
+    End If
+    
+    ' الحساب غير موجود
+    If Not IsInList(Me.Co_dpacc, selectedAcc) Then
+        MsgBox "الحساب المدخل غير موجود", vbExclamation
+        Me.Co_dpacc.Value = ""
+        Me.Co_dpacc.SetFocus
+    End If
+End Sub
+
+Private Function IsInList(cmb As MSForms.ComboBox, val As String) As Boolean
+    Dim i As Long
+    For i = 0 To cmb.listCount - 1
+        If Trim(cmb.List(i)) = val Then
+            IsInList = True
+            Exit Function
+        End If
+    Next i
+    IsInList = False
+
+    
+End Function
+
+''''''''''''''''''''
+Private Sub Cbobian_KeyUp(ByVal KeyCode As MSForms.ReturnInteger, ByVal Shift As Integer)
+    Dim ws As Worksheet
+    Dim lastRow As Long, i As Long
+    Dim searchTxt As String, itemTxt As String, typedTxt As String
+    Dim tempList() As String
+    Dim dict As Object
+    Dim listCount As Long
+    Dim searchWords() As String
+    
+    On Error GoTo CleanExit
+    If KeyCode = vbKeyReturn Or KeyCode = vbKeyUp Or KeyCode = vbKeyDown Or KeyCode = vbKeyEscape Then Exit Sub
+    
+    Set ws = ThisWorkbook.Worksheets("daily operation")
+    typedTxt = Me.cboBian.Text
+    searchTxt = Trim(typedTxt)
+    
+    Application.EnableEvents = False
+    Application.ScreenUpdating = False
+    
+    If searchTxt = "" Then
+        Call FillCbobianFull
+        GoTo CleanExit
+    End If
+    
+    Set dict = CreateObject("Scripting.Dictionary")
+    searchWords = Split(UCase(searchTxt), " ")
+    lastRow = ws.Cells(ws.Rows.Count, "G").End(xlUp).Row
+    ReDim tempList(0 To 0)
+    listCount = 0
+    
+    For i = 3 To lastRow
+        itemTxt = Trim(ws.Cells(i, "G").Value)
+        If itemTxt <> "" Then
+            If Not dict.Exists(itemTxt) Then
+                If MatchExactStart(UCase(itemTxt), searchWords) Then
+                    dict.Add itemTxt, ""
+                    tempList(listCount) = itemTxt
+                    listCount = listCount + 1
+                    ReDim Preserve tempList(0 To listCount)
+                End If
+            End If
+        End If
+    Next i
+    
+    If listCount > 0 Then
+        ReDim Preserve tempList(0 To listCount - 1)
+        Me.cboBian.List = tempList
+        Me.cboBian.DropDown
+    Else
+        Me.cboBian.clear
+    End If
+    
+    Me.cboBian.Text = typedTxt
+    Me.cboBian.SelStart = Len(typedTxt)
+    
+CleanExit:
+    Application.EnableEvents = True
+    Application.ScreenUpdating = True
+    On Error GoTo 0
+End Sub
+
+Private Sub FillCbobianFull()
+    Dim ws As Worksheet
+    Dim lastRow As Long, i As Long
+    Dim tempList() As String
+    Dim dict As Object
+    Dim listCount As Long
+    
+    Set ws = ThisWorkbook.Worksheets("daily operation")
+    Set dict = CreateObject("Scripting.Dictionary")
+    
+    lastRow = ws.Cells(ws.Rows.Count, "G").End(xlUp).Row
+    ReDim tempList(0 To 0)
+    listCount = 0
+    
+    For i = 3 To lastRow
+        If Trim(ws.Cells(i, "G").Value) <> "" Then
+            If Not dict.Exists(Trim(ws.Cells(i, "G").Value)) Then
+                dict.Add Trim(ws.Cells(i, "G").Value), ""
+                tempList(listCount) = Trim(ws.Cells(i, "G").Value)
+                listCount = listCount + 1
+                ReDim Preserve tempList(0 To listCount)
+            End If
+        End If
+    Next i
+    
+    If listCount > 0 Then
+        ReDim Preserve tempList(0 To listCount - 1)
+        Me.cboBian.List = tempList
+    End If
+End Sub
+
+Private Function MatchExactStart(itemText As String, searchWords() As String) As Boolean
+    Dim itemWords() As String
+    Dim i As Long, j As Long
+    
+    itemWords = Split(itemText, " ")
+    j = LBound(searchWords)
+    
+    For i = LBound(itemWords) To UBound(itemWords)
+        If Len(itemWords(i)) >= Len(searchWords(j)) Then
+            If Left(itemWords(i), Len(searchWords(j))) = searchWords(j) Then
+                j = j + 1
+                If j > UBound(searchWords) Then
+                    MatchExactStart = True
+                    Exit Function
+                End If
+            End If
+        End If
+    Next i
+    
+    MatchExactStart = False
+End Function
+
+Private Sub Calc_Amount()
+    If Trim(Me.Tex_rate.Text) = "" Or Trim(Me.Tex_Amount.Text) = "" Then
+        Me.TXTAMOSR.Text = ""
+    Else
+        Me.TXTAMOSR.Text = Format(val(Me.Tex_Amount.Text) / val(Me.Tex_rate.Text), "0.00")
+    End If
+End Sub
+
+==========================================================================================
+FILE 18: VBA Code/Opration.frm
+ORIGINAL ENCODING DETECTED: cp1256
+==========================================================================================
+VERSION 5.00
+Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} Opration 
+   ClientHeight    =   10644
+   ClientLeft      =   -336
+   ClientTop       =   -1308
+   ClientWidth     =   17136
+   OleObjectBlob   =   "Opration.frx":0000
+   StartUpPosition =   1  'CenterOwner
+End
+Attribute VB_Name = "Opration"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = False
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+
+
+
+Private Sub cbokop_AfterUpdate()
+    
+    Dim selectedVal As String
+    selectedVal = Trim(Me.CboKOP.Value)
+    
+    If selectedVal = "" Then Exit Sub
+    
+    If Not IsInList(Me.CboKOP, selectedVal) Then
+        MsgBox "النوع الذي أدخلته غير موجود", vbExclamation, "تنبيه"
+        Me.CboKOP.Value = ""
+        Me.CboKOP.SetFocus
+    End If
+
+End Sub
+
+Private Sub Cbokop_Change()
+
+    On Error Resume Next
+    Me.CboKOP.DropDown
+    Dim ws As Worksheet
+    Dim lastRow As Long, i As Long
+    Dim accType As String
+    Dim jFilter As String
+    
+    Set ws = ThisWorkbook.Sheets("judje")
+    Me.Co_cashac.clear
+    
+    If Me.CboKOP.ListIndex = -1 Then Exit Sub
+    
+    accType = Trim(Me.CboKOP.Value)
+    
+    ' تحديد قيمة العمود J حسب اختيار cbokop
+    Select Case UCase(accType)
+        Case "صرف نقدي"
+            jFilter = "صندوق"
+        Case "صرف بنكي"
+            jFilter = "بنك"
+        Case "قيد عهده"
+            jFilter = "عهد"
+        Case "قيد فاتورة"
+            jFilter = "مورد"
+         Case "قيد يومية"
+            jFilter = "عام"
+        Case Else
+            Exit Sub
+    End Select
+    
+    lastRow = ws.Cells(ws.Rows.Count, "C").End(xlUp).Row
+    
+    With Me.Co_cashac
+        For i = 3 To lastRow
+            ' شرط 1: عمود J = القيمة المحددة من cbokop
+            ' شرط 2: عمود F = "تحليلي"
+            If UCase(Trim(ws.Cells(i, "J").Value)) = UCase(jFilter) _
+               And UCase(Trim(ws.Cells(i, "F").Value)) = "تحليلي" Then
+                
+                If Trim(ws.Cells(i, "C").Value) <> "" Then
+                    .AddItem ws.Cells(i, "C").Value
+                End If
+            End If
+        Next i
+    End With
+    
+    ' اختياري: اختيار أول عنصر تلقائياً
+   ' If Me.Co_cashac.listCount > 0 Then
+   '     Me.Co_cashac.ListIndex = 0
+   ' End If
+
+
+    
+   
+  
+    Dim maxNum As Long
+    Dim num As Long
+    Dim prefix As String
+    
+    On Error GoTo ErrHandler
+    
+    
+    If Trim(Me.CboKOP.Text) = "" Then
+        Me.Tex_NU.Value = ""
+        Exit Sub
+    End If
+    
+    Set ws = ThisWorkbook.Worksheets("Daily Operation")
+    maxNum = 0
+    
+    
+    Select Case Trim(Me.CboKOP.Text)
+        Case "صرف نقدي", "صرف بنكي"
+            prefix = "PV"
+        Case "قيد فاتورة", "قيد عهده", "قيد يومية"
+            prefix = "JV"
+        Case Else
+            Me.Tex_NU.Value = ""
+            Exit Sub
+    End Select
+    
+    
+    lastRow = ws.Cells(ws.Rows.Count, "B").End(xlUp).Row
+    If lastRow < 3 Then lastRow = 3
+    
+    
+    For i = 3 To lastRow
+        If UCase(Left(Trim(ws.Cells(i, "B").Value), Len(prefix))) = prefix Then
+            num = val(Mid(Trim(ws.Cells(i, "B").Value), Len(prefix) + 1))
+            If num > maxNum Then maxNum = num
+        End If
+    Next i
+    
+    
+    Me.Tex_NU.Value = prefix & Format(maxNum + 1, "000")
+    Exit Sub
+    
+ErrHandler:
+    MsgBox "خطأ في توليد رقم العملية: " & Err.Description, vbExclamation
+    Me.Tex_NU.Value = prefix & "001"
+
+End Sub
+
+Private Sub CboMostafed_Change()
+Me.CboMostafed.DropDown
+End Sub
+
+Private Sub cbosenter_Change()
+Me.cbosenter.DropDown
+
+End Sub
+
+'Private Sub co_cashac_BeforeUpdate(ByVal Cancel As MSForms.ReturnBoolean)
+Private Sub Co_cashac_AfterUpdate()
+    Dim selectedAcc As String
+    selectedAcc = Trim(Me.Co_cashac.Value)
+    
+    If selectedAcc = "" Then Exit Sub
+    
+    ' فحص لو اختار نفس الحساب اللي في المدين
+    If UCase(Trim(selectedAcc)) = UCase(Trim(Me.Co_dpacc.Value)) Then
+        MsgBox "لا يمكن الصرف من نفس الحساب", vbExclamation, "تنبيه"
+        Me.Co_cashac.Value = ""
+        Me.Co_cashac.SetFocus
+        Exit Sub
+    End If
+    
+    ' باقي كود فحص وجود الحساب
+    If Not IsInList(Me.Co_cashac, selectedAcc) Then
+        MsgBox "الحساب المدخل غير موجود", vbExclamation, "تنبيه"
+        Me.Co_cashac.Value = ""
+        Me.Co_cashac.SetFocus
+    End If
+   '
+End Sub
+
+Private Sub Co_cashac_Change()
+Me.Co_cashac.DropDown
+
+End Sub
+Private Sub co_cur_Change()
+Dim ws As Worksheet
+    Dim rng As Range
+    Dim MINP As Double
+    Dim MAXP As Double
+    
+    Set ws = ThisWorkbook.Worksheets("data")
+    Set rng = ws.Range("c:c").Find(Co_cur.Value)
+    
+    If Not rng Is Nothing Then
+      MINP = ws.Cells(rng.Row, "f").Value
+       MAXP = ws.Cells(rng.Row, "g").Value
+       
+       Tex_rate.Value = ""
+        Tex_rate.Tag = MINP & "I" & MAXP
+       Else
+        Tex_rate.Value = ""
+        Tex_rate.Tag = ""
+       End If
+       
+       
+      ' تحديد سعر الصرف
+   
+    Dim curName As String
+    Dim foundRow As Long
+    
+    If Me.Co_cur.ListIndex = -1 Then Exit Sub
+    
+    Set ws = ThisWorkbook.Worksheets("data")
+    curName = Trim(Me.Co_cur.Text)
+    
+    ' دور على العملة في عمود A
+    foundRow = 0
+    On Error Resume Next
+    foundRow = Application.Match(curName, ws.Range("c3:c" & ws.Cells(ws.Rows.Count, "c").End(xlUp).Row), 0)
+    On Error GoTo 0
+    
+    If foundRow > 0 Then
+        foundRow = foundRow + 2
+        
+        
+        If LCase(Trim(ws.Cells(foundRow, "H").Value)) = "عملة محلية" Then
+            Me.Tex_rate.Text = "1"
+            Me.Tex_rate.Enabled = False
+            Me.Tex_Amount.SetFocus
+        Else
+            
+            Me.Tex_rate.Text = ws.Cells(foundRow, "E").Value
+            Me.Tex_rate.Enabled = True
+            Me.Tex_rate.SetFocus
+        End If
+    Else
+        Me.Tex_rate.Text = ""
+        Me.Tex_rate.Enabled = True
+    End If
+
+End Sub
+Private Sub cobkindmrga_AfterUpdate()
+Dim selectedVal As String
+    selectedVal = Trim(Me.cobkindmrga.Value)
+    
+    If selectedVal = "" Then Exit Sub
+    
+    If Not IsInList(Me.cobkindmrga, selectedVal) Then
+        MsgBox "النوع الذي أدخلته غير موجود", vbExclamation, "تنبيه"
+        Me.cobkindmrga.Value = ""
+        Me.cobkindmrga.SetFocus
+    End If
+End Sub
+
+Private Sub cobkindmrga_Change()
+
+    Dim ws As Worksheet
+    Dim lastRow As Long, i As Long
+    Dim dict As Object
+    Dim key As Variant
+    Dim filterVal As String
+    
+    Set ws = ThisWorkbook.Sheets("daily operation")
+    Set dict = CreateObject("Scripting.Dictionary")
+    
+    Me.cobnamemrga.clear
+    
+    Select Case Me.cobkindmrga.Value
+        Case "استلام نقدي"
+           ' Me.LablNameMrga.Visible = False
+           ' Me.cobnamemrga.Visible = False
+            Me.cobnamemrga.Value = "سند استلام"
+            Me.cobnamemrga.Enabled = False
+           ' Me.Tex_MrgaNo.SetFocus
+       Case "كشف صرف"
+        
+             Me.cobnamemrga.Value = "كشف صرف"
+            Me.cobnamemrga.Enabled = False
+        
+        Case "حواله"
+            Me.LablNameMrga.Visible = True
+            Me.LablNameMrga.Caption = "اســم البنك"
+            Me.cobnamemrga.Visible = True
+            Me.cobnamemrga.Enabled = True
+            filterVal = "حواله"
+            Call FillFilteredList(filterVal)
+            
+            
+        Case "فاتورة"
+            Me.LablNameMrga.Visible = True
+            Me.LablNameMrga.Caption = "اســم المـورد"
+            Me.cobnamemrga.Visible = True
+            Me.cobnamemrga.Enabled = True
+            filterVal = Me.cobkindmrga.Value
+            Call FillFilteredList(filterVal)
+             
+            
+        Case Else
+            Me.LablNameMrga.Visible = False
+            Me.cobnamemrga.Visible = False
+    End Select
+End Sub
+
+Private Sub FillFilteredList(filterVal As String)
+    Dim ws As Worksheet
+    Dim lastRow As Long, i As Long
+    Dim dict As Object
+    Dim key As Variant
+    
+    Set ws = ThisWorkbook.Sheets("daily operation")
+    Set dict = CreateObject("Scripting.Dictionary")
+    
+    lastRow = ws.Cells(ws.Rows.Count, "O").End(xlUp).Row
+    
+    For i = 3 To lastRow
+        If UCase(Trim(ws.Cells(i, "O").Value)) = UCase(filterVal) Then
+            If Trim(ws.Cells(i, "P").Value) <> "" Then
+                If Not dict.Exists(Trim(ws.Cells(i, "P").Value)) Then
+                    dict.Add Trim(ws.Cells(i, "P").Value), ""
+                End If
+            End If
+        End If
+    Next i
+    
+    Me.cobnamemrga.clear
+    For Each key In dict.Keys
+        Me.cobnamemrga.AddItem CStr(key)
+    Next key
+        Me.cobnamemrga.Value = ""
+        Me.cobnamemrga.ListIndex = -1
+        
+End Sub
+
+
+
+Private Sub cobnamemrga_Change()
+If Me.Enabled = True Then
+If Len(Me.cobnamemrga.Text) > 0 Then
+Me.cobnamemrga.DropDown
+End If
+End If
+
+End Sub
+
+Private Sub edit_BeforeDragOver(ByVal Cancel As MSForms.ReturnBoolean, ByVal Data As MSForms.DataObject, ByVal X As Single, ByVal Y As Single, ByVal DragState As MSForms.fmDragState, ByVal Effect As MSForms.ReturnEffect, ByVal Shift As Integer)
+
+End Sub
+
+Private Sub ListBox1_Click()
+
+End Sub
+
+Private Sub OPR_Click()
+
+End Sub
+Private Sub save_MouseDown(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single)
+If Me.Co_cashac.Value = "" Or cboBian.Value = "" Or Tex_Amount.Value = "" Or cbosenter.Value = "" Or Co_dpacc.Value = "" Then
+
+MsgBox prompt:="الرجاء التأكد من إدخال جميع بيانات الإذن", Title:="خطأعدم اكتمال البيانات"
+Else
+Application.ScreenUpdating = False
+Application.EnableEvents = False
+Application.Calculation = xlCalculationManual
+
+Me.ListBox1.RowSource = ""
+
+''''''''''''اضافة''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+Sheets("Daily Operation").Activate
+ With ThisWorkbook.Sheets("Daily Operation")
+    .Range("A3:U3").Select
+    Selection.ListObject.ListRows.Add (1)
+
+    .Range("A3").Value = "=row()-2"
+    .Range("B3").Value = Me.Tex_NU.Value
+    .Range("C3").Value = Me.Tex_da
+    .Range("C3").NumberFormat = "yyyy-mm-dd"
+    .Range("F3").Value = Me.Co_cashac.Text
+    .Range("D3").Value = Me.CboKOP.Value
+    .Range("g3").Value = Me.cboBian.Value
+    .Range("I3").Value = Me.Co_dpacc.Value
+    .Range("J3").Value = Me.Co_cur.Value
+    .Range("K3").Value = Me.Tex_Amount.Text
+    .Range("L3").Value = Me.Tex_rate.Value
+    .Range("n3").Value = Me.CboMostafed.Value
+    .Range("O3").Value = Me.cobkindmrga.Value
+    .Range("P3").Value = Me.cobnamemrga.Text
+    .Range("Q3").Value = Me.Tex_MrgaNo.Text
+    .Range("R3").Value = Me.cbosenter.Text
+    .Range("U3").Value = Format(Now(), "yyyy-mm-dd hh:mm:ss")
+    .Range("v3").Value = Me.cboorder.Value
+        End With
+        
+       
+    Dim ws As Worksheet
+    Dim lastRow As Long
+    
+    Set ws = ThisWorkbook.Worksheets("Daily Journal")
+    
+   
+    lastRow = ws.Cells(ws.Rows.Count, "C").End(xlUp).Row
+    If lastRow < 3 Then lastRow = 2
+    
+   ' Application.ScreenUpdating = False
+    
+    ' ????? ?????: Tex_NU + co_dpacc
+    ws.Cells(lastRow + 1, "C").Value = Me.Tex_NU.Value
+    ws.Cells(lastRow + 1, "G").Value = Me.Co_dpacc.Value
+    
+    ' ????? ??????: Tex_NU + co_cashac
+    ws.Cells(lastRow + 2, "C").Value = Me.Tex_NU.Value
+    ws.Cells(lastRow + 2, "G").Value = Me.Co_cashac.Value
+  
+          
+          Application.Calculation = xlCalculationAutomatic
+          Application.EnableEvents = True
+          Application.ScreenUpdating = True
+   
+     MsgBox ("تم اضافة الإذن بنجاح")
+   
+   Me.Co_cashac.Value = ""
+   Me.CboKOP.Value = ""
+   Me.cboBian.Value = ""
+   Me.Co_dpacc.Value = ""
+   Me.Co_cur.Value = ""
+   Me.Tex_Amount.Text = ""
+   Me.Tex_rate.Text = ""
+   Me.CboMostafed.Value = ""
+   Me.cobkindmrga.Value = ""
+   Me.cobnamemrga.Value = ""
+   Me.Tex_MrgaNo.Value = ""
+   Me.cbosenter.Value = ""
+    Me.cboorder.Value = ""
+      End If
+      
+       Me.ListBox1.RowSource = "Tabledaily"
+
+     
+      
+End Sub
+
+Private Sub Tex_Amount_Change()
+  Call Calc_Amount
+End Sub
+
+Private Sub Tex_da_AfterUpdate()
+' تكست التاريخ
+ Dim dateValue As Date
+    Dim dateString As String
+    
+    dateString = Tex_da.Value
+   
+    If IsNumeric(dateString) Then
+        dateString = Format(dateString, "00000000")
+        dateString = Left(dateString, 4) & "-" & Mid(dateString, 5, 2) & "-" & Right(dateString, 2)
+    End If
+
+    On Error Resume Next
+    dateValue = CDate(dateString)
+    On Error GoTo 0
+    
+    If dateValue = 0 Then
+        MsgBox "تاريخ غير صحيح", vbExclamation, "خطأ"
+        Tex_da.Value = Format(Date, "yyyy-mm-dd")
+        Exit Sub
+    End If
+ 
+    If dateValue > Date Then
+        MsgBox "التاريخ اكبر من تاريخ اليوم", vbInformation, "تنبيه"
+    End If
+     
+    If Month(dateValue) < 1 Or Month(dateValue) > 12 Then
+        MsgBox "الشهر غير صحيح", vbExclamation, "خطأ"
+        Tex_da.Value = Format(Date, "yyyy-mm-dd")
+        Exit Sub
+    End If
+    
+    
+    If Day(dateValue) < 1 Or Day(dateValue) > Day(DateSerial(Year(dateValue), Month(dateValue) + 1, 0)) Then
+        MsgBox "اليوم غير صحيح", vbExclamation, "خطاء"
+        Tex_da.Value = Format(Date, "yyyy-mm-dd")
+        Exit Sub
+    End If
+    ' date
+    Tex_da.Value = Format(dateValue, "yyyy-mm-dd")
+      
+   
+    
+End Sub
+
+Private Sub Tex_MrgaNo_Change()
+
+End Sub
+
+Private Sub Tex_rate_AfterUpdate()
+ 
+    Call Calc_Amount
+  Dim PRICE() As String
+    Dim MINP As Double
+    Dim MAXP As Double
+    
+ PRICE = Split(Tex_rate.Tag, "I")
+ 
+  If UBound(PRICE) = 1 Then
+  MINP = PRICE(0)
+  MAXP = PRICE(1)
+  
+  If Tex_rate.Value = "" Then
+     MsgBox "الرجاء ادخال سعر الصرف", vbExclamation, "خطأ"
+    ElseIf Not IsNumeric(Tex_rate.Value) Then
+    MsgBox "الرجاء ادخال قيمة رقمية", vbExclamation, "خطاء"
+    Tex_rate.Value = ""
+    ElseIf CDbl(Tex_rate.Value) < MINP Or CDbl(Tex_rate.Value) > MAXP Then
+    MsgBox "سعر الصرف يجب ان يكون بين" & MINP & "و" & MAXP, vbExclamation, "خطأ"
+    Tex_rate.Value = ""
+    Tex_rate.SetFocus
+    End If
+    End If
+    
+End Sub
+
+
+Private Sub UserForm_Initialize()
+
+ Tex_da.Value = Format(Date, "yyyy-mm-dd")
+ 
+  ' full cbokop
+    With Me.CboKOP
+    .clear
+    .AddItem "صرف نقدي"
+    .AddItem "صرف بنكي"
+    .AddItem "قيد عهده"
+    .AddItem "قيد فاتورة"
+    .AddItem "قيد يومية"
+   
+    End With
+    
+    With Me.cobkindmrga
+        .clear
+        .AddItem "استلام نقدي"
+        .AddItem "حواله"
+        .AddItem "فاتورة"
+         .AddItem "كشف صرف"
+    End With
+   
+        
+    'cbmostafi
+   
+
+    Dim ws As Worksheet
+    Dim lastRow As Long, i As Long
+    Dim dict As Object
+    Dim key As Variant
+    
+    Set ws = ThisWorkbook.Sheets("daily operation")
+    Set dict = CreateObject("Scripting.Dictionary")
+    
+    Me.CboMostafed.clear
+    
+    lastRow = ws.Cells(ws.Rows.Count, "N").End(xlUp).Row
+    
+    '
+    For i = 3 To lastRow
+        If Trim(ws.Cells(i, "N").Value) <> "" Then
+            If Not dict.Exists(Trim(ws.Cells(i, "N").Value)) Then
+                dict.Add Trim(ws.Cells(i, "N").Value), ""
+            End If
+        End If
+    Next i
+    
+    
+    For Each key In dict.Keys
+        Me.CboMostafed.AddItem CStr(key)
+    Next key
+    '''''''''''''''''''
+    
+    
+
+'''''''''''''''''''''''''''''
+
+    Me.cboBian.Style = fmStyleDropDownCombo
+    Me.cboBian.MatchEntry = fmMatchEntryNone
+    Call FillCbobianFull
+    
+    
+    
+    
+   
+    Me.Co_dpacc.Style = fmStyleDropDownCombo
+    Me.Co_dpacc.MatchEntry = fmMatchEntryNone
+    Call FillCoDpAccFull
+End Sub
+
+Private Sub co_dpacc_KeyUp(ByVal KeyCode As MSForms.ReturnInteger, ByVal Shift As Integer)
+    Dim ws As Worksheet
+    Dim lastRow As Long, i As Long, j As Long
+    Dim searchTxt As String, itemTxt As String, typedTxt As String
+    Dim tempList() As String, words() As String
+    Dim found As Boolean, listCount As Long
+
+    On Error GoTo CleanExit
+    If KeyCode = vbKeyReturn Or KeyCode = vbKeyUp Or KeyCode = vbKeyDown Or KeyCode = vbKeyEscape Then Exit Sub
+
+    Set ws = ThisWorkbook.Worksheets("judje")
+    typedTxt = Me.Co_dpacc.Text
+    searchTxt = Trim(typedTxt)
+
+    Application.EnableEvents = False
+    Application.ScreenUpdating = False
+
+    If searchTxt = "" Then
+        Call FillCoDpAccFull
+        GoTo CleanExit
+    End If
+
+    lastRow = ws.Cells(ws.Rows.Count, "C").End(xlUp).Row
+    ReDim tempList(0 To 0)
+    listCount = 0
+
+    For i = 3 To lastRow
+        If ws.Cells(i, "F").Value = "تحليلي" Then
+            itemTxt = ws.Cells(i, "C").Value
+            words = Split(itemTxt, " ")
+            found = False
+            
+            For j = LBound(words) To UBound(words)
+                If InStr(1, UCase(words(j)), UCase(searchTxt), vbTextCompare) > 0 Then
+                    found = True
+                    Exit For
+                End If
+            Next j
+            
+            If found Then
+                tempList(listCount) = itemTxt
+                listCount = listCount + 1
+                ReDim Preserve tempList(0 To listCount)
+            End If
+        End If
+    Next i
+
+    If listCount > 0 Then
+        ReDim Preserve tempList(0 To listCount - 1)
+        Me.Co_dpacc.List = tempList
+        Me.Co_dpacc.DropDown
+    Else
+        Me.Co_dpacc.clear
+    End If
+
+    Me.Co_dpacc.Text = typedTxt
+    Me.Co_dpacc.SelStart = Len(typedTxt)
+
+CleanExit:
+    Application.EnableEvents = True
+    Application.ScreenUpdating = True
+    On Error GoTo 0
+End Sub
+
+Private Sub FillCoDpAccFull()
+    Dim ws As Worksheet
+    Dim lastRow As Long, i As Long
+    Dim tempList() As String
+    Dim listCount As Long
+
+    Set ws = ThisWorkbook.Worksheets("judje")
+    lastRow = ws.Cells(ws.Rows.Count, "C").End(xlUp).Row
+    ReDim tempList(0 To 0)
+    listCount = 0
+
+    For i = 3 To lastRow
+        If ws.Cells(i, "F").Value = "تحليلي" Then
+            tempList(listCount) = ws.Cells(i, "C").Value
+            listCount = listCount + 1
+            ReDim Preserve tempList(0 To listCount)
+        End If
+    Next i
+
+    If listCount > 0 Then
+        ReDim Preserve tempList(0 To listCount - 1)
+        Me.Co_dpacc.List = tempList
+    End If
+End Sub
+
+Private Sub co_dpacc_AfterUpdate()
+    Dim selectedAcc As String
+    selectedAcc = Trim(Me.Co_dpacc.Value)
+    
+    If selectedAcc = "" Then Exit Sub
+    
+    ' لا يمكن الصرف من نفس الحساب
+    If selectedAcc = Trim(Me.Co_cashac.Value) Then
+        MsgBox "لا يمكن الصرف من نفس الحساب", vbExclamation
+        Me.Co_dpacc.Value = ""
+        Me.Co_dpacc.SetFocus
+        Exit Sub
+    End If
+    
+    ' الحساب غير موجود
+    If Not IsInList(Me.Co_dpacc, selectedAcc) Then
+        MsgBox "الحساب المدخل غير موجود", vbExclamation
+        Me.Co_dpacc.Value = ""
+        Me.Co_dpacc.SetFocus
+    End If
+End Sub
+
+Private Function IsInList(cmb As MSForms.ComboBox, val As String) As Boolean
+    Dim i As Long
+    For i = 0 To cmb.listCount - 1
+        If Trim(cmb.List(i)) = val Then
+            IsInList = True
+            Exit Function
+        End If
+    Next i
+    IsInList = False
+
+    
+End Function
+
+''''''''''''''''''''
+Private Sub Cbobian_KeyUp(ByVal KeyCode As MSForms.ReturnInteger, ByVal Shift As Integer)
+    Dim ws As Worksheet
+    Dim lastRow As Long, i As Long
+    Dim searchTxt As String, itemTxt As String, typedTxt As String
+    Dim tempList() As String
+    Dim dict As Object
+    Dim listCount As Long
+    Dim searchWords() As String
+    
+    On Error GoTo CleanExit
+    If KeyCode = vbKeyReturn Or KeyCode = vbKeyUp Or KeyCode = vbKeyDown Or KeyCode = vbKeyEscape Then Exit Sub
+    
+    Set ws = ThisWorkbook.Worksheets("daily operation")
+    typedTxt = Me.cboBian.Text
+    searchTxt = Trim(typedTxt)
+    
+    Application.EnableEvents = False
+    Application.ScreenUpdating = False
+    
+    If searchTxt = "" Then
+        Call FillCbobianFull
+        GoTo CleanExit
+    End If
+    
+    Set dict = CreateObject("Scripting.Dictionary")
+    searchWords = Split(UCase(searchTxt), " ")
+    lastRow = ws.Cells(ws.Rows.Count, "G").End(xlUp).Row
+    ReDim tempList(0 To 0)
+    listCount = 0
+    
+    For i = 3 To lastRow
+        itemTxt = Trim(ws.Cells(i, "G").Value)
+        If itemTxt <> "" Then
+            If Not dict.Exists(itemTxt) Then
+                If MatchExactStart(UCase(itemTxt), searchWords) Then
+                    dict.Add itemTxt, ""
+                    tempList(listCount) = itemTxt
+                    listCount = listCount + 1
+                    ReDim Preserve tempList(0 To listCount)
+                End If
+            End If
+        End If
+    Next i
+    
+    If listCount > 0 Then
+        ReDim Preserve tempList(0 To listCount - 1)
+        Me.cboBian.List = tempList
+        Me.cboBian.DropDown
+    Else
+        Me.cboBian.clear
+    End If
+    
+    Me.cboBian.Text = typedTxt
+    Me.cboBian.SelStart = Len(typedTxt)
+    
+CleanExit:
+    Application.EnableEvents = True
+    Application.ScreenUpdating = True
+    On Error GoTo 0
+End Sub
+
+Private Sub FillCbobianFull()
+    Dim ws As Worksheet
+    Dim lastRow As Long, i As Long
+    Dim tempList() As String
+    Dim dict As Object
+    Dim listCount As Long
+    
+    Set ws = ThisWorkbook.Worksheets("daily operation")
+    Set dict = CreateObject("Scripting.Dictionary")
+    
+    lastRow = ws.Cells(ws.Rows.Count, "G").End(xlUp).Row
+    ReDim tempList(0 To 0)
+    listCount = 0
+    
+    For i = 3 To lastRow
+        If Trim(ws.Cells(i, "G").Value) <> "" Then
+            If Not dict.Exists(Trim(ws.Cells(i, "G").Value)) Then
+                dict.Add Trim(ws.Cells(i, "G").Value), ""
+                tempList(listCount) = Trim(ws.Cells(i, "G").Value)
+                listCount = listCount + 1
+                ReDim Preserve tempList(0 To listCount)
+            End If
+        End If
+    Next i
+    
+    If listCount > 0 Then
+        ReDim Preserve tempList(0 To listCount - 1)
+        Me.cboBian.List = tempList
+    End If
+End Sub
+
+Private Function MatchExactStart(itemText As String, searchWords() As String) As Boolean
+    Dim itemWords() As String
+    Dim i As Long, j As Long
+    
+    itemWords = Split(itemText, " ")
+    j = LBound(searchWords)
+    
+    For i = LBound(itemWords) To UBound(itemWords)
+        If Len(itemWords(i)) >= Len(searchWords(j)) Then
+            If Left(itemWords(i), Len(searchWords(j))) = searchWords(j) Then
+                j = j + 1
+                If j > UBound(searchWords) Then
+                    MatchExactStart = True
+                    Exit Function
+                End If
+            End If
+        End If
+    Next i
+    
+    MatchExactStart = False
+End Function
+
+Private Sub Calc_Amount()
+    If Trim(Me.Tex_rate.Text) = "" Or Trim(Me.Tex_Amount.Text) = "" Then
+        Me.TXTAMOSR.Text = ""
+    Else
+        Me.TXTAMOSR.Text = Format(val(Me.Tex_Amount.Text) / val(Me.Tex_rate.Text), "0.00")
+    End If
+End Sub
+
+==========================================================================================
+FILE 19: VBA Code/RPACCOUNT.frm
+ORIGINAL ENCODING DETECTED: cp1256
+==========================================================================================
+VERSION 5.00
+Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} RPACCOUNT 
+   Caption         =   "كشــف حســـاب"
+   ClientHeight    =   4392
+   ClientLeft      =   -864
+   ClientTop       =   -3072
+   ClientWidth     =   12852
+   OleObjectBlob   =   "RPACCOUNT.frx":0000
+   StartUpPosition =   1  'CenterOwner
+End
+Attribute VB_Name = "RPACCOUNT"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = False
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+
+
+
+Option Explicit
+
+Private Sub Cod_AfterUpdate()
+ '  Dim i, lr As Long
+ '
+ '  lr = judje.Cells(judje.Rows.Count, "B").End(xlUp).Row
+ '  For i = 3 To lr
+ 'If val(Me.Cod) = judje.Cells(i, "B") Then
+ '     Me.itms.Value = judje.Cells(i, "C").Value
+ 'End If
+ '  Next i
+End Sub
+
+Private Sub ComClear_Click()
+Me.itms.Value = ""
+Me.Cod.Value = ""
+
+End Sub
+
+Private Sub ComSearch_Click()
+  On Error Resume Next
+  If Trim(Me.itms.Value) = "" Or Trim(Me.Cod.Value) = "" Or Trim(Me.da.Value) = "" Or Trim(Me.da1.Value) = "" Then
+      MsgBox "الرجاء ادخال كافة البيانات", vbExclamation, "تنبيه"
+      Exit Sub
+      End If
+      
+    Dim ws As Worksheet
+    Set ws = ThisWorkbook.Worksheets("report")
+    
+    With ws
+     .Cells(2, "f").Value = Me.itms.Value
+      .Cells(2, "h").Value = Me.Cod.Value
+    .Cells(2, "t").Value = Format(Me.da.Value, "yyyy/mm/dd")
+    .Cells(3, "t").Value = Format(Me.da1.Value, "yyyy/mm/dd")
+     End With
+        ws.Activate
+        ws.Range("c7").Select
+        Unload Me
+        
+End Sub
+
+Private Sub Frame1_Click()
+
+End Sub
+
+Private Sub itms_AfterUpdate()
+Dim i, lr As Long
+Dim judje As Worksheet
+  Set judje = ThisWorkbook.Sheets("judje")
+  
+lr = judje.Cells(judje.Rows.Count, "C").End(xlUp).Row
+For i = 3 To lr
+If Me.itms.Value = judje.Cells(i, "C").Value Then
+Me.Cod.Value = judje.Cells(i, "B").Value
+End If
+
+Next i
+
+End Sub
+
+Private Sub da_AfterUpdate()
+da = Format(da, "yyyy/mm/dd")
+End Sub
+
+Private Sub da1_AfterUpdate()
+da1 = Format(da1, "yyyy/mm/dd")
+End Sub
+Private Sub UserForm_Initialize()
+Me.Height = 247
+Me.Width = 655
+
+Me.da.Value = Format(report.Cells(2, "S").Value, "yyyy/mm/dd")
+Me.da1.Value = Format(report.Cells(3, "s").Value, "yyyy/mm/dd")
+
+
+Dim i As Long, lastRow As Long
+
+Me.itms.clear
+
+lastRow = Sheets("judje").Cells(Rows.Count, "C").End(xlUp).Row
+
+For i = 3 To lastRow
+    If Sheets("judje").Cells(i, "E").Value = 5 Then
+        Me.itms.AddItem Sheets("judje").Cells(i, "C").Value
+    End If
+Next i
+
+End Sub
